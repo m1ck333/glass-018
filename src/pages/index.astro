@@ -1,0 +1,597 @@
+---
+import { Image } from 'astro:assets';
+import Osnovni from '../layouts/Osnovni.astro';
+import ModelKartica from '../components/ModelKartica.astro';
+import { site } from '../data/site';
+import { sviModeli, galerija, CENA_STAKLA, dinar } from '../lib/modeli';
+
+const modeli = await sviModeli();
+
+/** Traka fotografija preko cele širine — po jedna iz svake grupe.
+ *  Namerno druga slika iz foldera, da se ne ponavlja sa karticom modela. */
+const traka = modeli
+  .map((m) => galerija(m.id)[1] ?? galerija(m.id)[0])
+  .filter(Boolean)
+  .slice(0, 6);
+
+const koraci = [
+  {
+    naslov: 'Javite se',
+    tekst:
+      'Telefonom ili na Viber. Pošaljite sliku kupatila i približne mere — po slici se vidi skoro sve.',
+  },
+  {
+    naslov: 'Izlazak na meru',
+    tekst: 'Dolazim, merim i kažem šta staje. Mera je besplatna i ne obavezuje vas ni na šta.',
+  },
+  {
+    naslov: 'Izrada',
+    tekst: 'Staklo se kali i seče po meri. Od mere do ugradnje prođe najčešće sedam do deset dana.',
+  },
+  {
+    naslov: 'Ugradnja',
+    tekst: 'Ugradnja traje pola dana. Montiram, zaptivam i očistim za sobom.',
+  },
+];
+
+const razlozi = [
+  {
+    naslov: 'Kaljeno staklo, po meri',
+    tekst:
+      'Ništa se ne uzima gotovo iz kutije. Svaka kabina i ograda se seče za taj prostor i te zidove.',
+  },
+  {
+    naslov: 'Mera i ugradnja od istog čoveka',
+    tekst: 'Ne prodajem staklo koje neko drugi montira. Uzimam meru, izrađujem i ugrađujem sam.',
+  },
+  {
+    naslov: 'Zidovi nisu pravi — i to se rešava',
+    tekst:
+      'Odstupanje zida se pokriva profilom pri meri, a ne silikonom na kraju. Zato nema procepa kroz koje curi voda.',
+  },
+  {
+    naslov: 'Cena koju vidite unapred',
+    tekst:
+      'Osnovna cena po modelu i staklo po kvadratu. Kalkulator sabira oba dela, pa red veličine znate pre poziva.',
+  },
+];
+---
+
+<Osnovni
+  naslov="Tuš kabine i staklene ograde po meri"
+  opis={`${site.tagline} Kaljeno staklo, besplatna mera, ugradnja za jedan dan. ${site.region}.`}
+  hero
+>
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="hero__poza" aria-hidden="true"></div>
+
+    <div class="wrap hero__in">
+      <p class="hero__mesto">
+        <span>{site.region}</span>
+        <span class="hero__tacka" aria-hidden="true"></span>
+        <span>{site.yearsExperience} godina iskustva</span>
+      </p>
+
+      <h1 class="display hero__naslov">
+        Staklo<br />
+        <em>po meri.</em>
+      </h1>
+
+      <div class="hero__dno">
+        <p class="lede hero__lede">
+          Tuš kabine, paravani i staklene ograde. Dolazim na meru, izrađujem i ugrađujem sam —
+          bez procepa kroz koje curi voda i bez čekanja da neko drugi dođe da montira.
+        </p>
+
+        <div class="hero__akcije">
+          <a class="btn" href="/modeli/">
+            Modeli i cene
+            <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 10h12M11 5l5 5-5 5" />
+            </svg>
+          </a>
+          <a class="btn btn--ghost" href={`tel:${site.phoneHref}`}>{site.phone}</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="brojke">
+      <div class="wrap brojke__in">
+        <div class="brojke__st">
+          <span class="brojke__broj">{site.projectsDone}+</span>
+          <span class="brojke__lab">Ugrađenih radova</span>
+        </div>
+        <div class="brojke__st">
+          <span class="brojke__broj">{site.yearsExperience}</span>
+          <span class="brojke__lab">Godina na terenu</span>
+        </div>
+        <div class="brojke__st">
+          <span class="brojke__broj">{modeli.length}</span>
+          <span class="brojke__lab">Modela na izbor</span>
+        </div>
+        <div class="brojke__st">
+          <span class="brojke__broj">0</span>
+          <span class="brojke__lab">Dinara za izlazak i meru</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODELI ================= -->
+  <section class="section" id="modeli">
+    <div class="wrap">
+      <header class="zaglavlje-sekcije" data-reveal>
+        <p class="eyebrow">Modeli i cene</p>
+        <h2 class="h1 zaglavlje-sekcije__naslov">
+          Osnovna cena, plus <em>staklo po meri</em>
+        </h2>
+        <p class="lede">
+          Svaki model ima svoju osnovnu cenu — okov, profili i ugradnja. Na to ide staklo, po {
+            dinar.format(CENA_STAKLA)
+          } RSD po kvadratu. Kliknite na model za kalkulator i fotografije ugrađenih primera.
+        </p>
+      </header>
+
+      <ul class="modeli">
+        {
+          modeli.map((m, i) => (
+            <li data-reveal style={`--reveal-delay: ${(i % 4) * 60}ms`}>
+              <ModelKartica model={m} broj={i + 1} eager={i < 2} />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= TRAKA RADOVA ================= -->
+  <section class="traka-sek">
+    <div class="wrap">
+      <header class="traka__glava" data-reveal>
+        <div>
+          <p class="eyebrow">Radovi</p>
+          <h2 class="h2 traka__naslov">Sa terena, <em>ne iz kataloga</em></h2>
+        </div>
+        <a class="arrow-link" href="/radovi/">
+          Svi radovi
+          <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 10h12M11 5l5 5-5 5" />
+          </svg>
+        </a>
+      </header>
+    </div>
+
+    <div class="wrap">
+      <ul class="traka">
+        {
+        traka.map((s, i) => (
+            <li>
+              <Image
+                src={s}
+                alt={`Ugrađen rad ${i + 1}`}
+                widths={[240, 360, 520]}
+                sizes="(min-width: 62rem) 15vw, (min-width: 40rem) 30vw, 45vw"
+                loading="lazy"
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= ZAŠTO ================= -->
+  <section class="section razlozi-sek">
+    <div class="wrap">
+      <header class="zaglavlje-sekcije" data-reveal>
+        <p class="eyebrow">Kako radim</p>
+        <h2 class="h1 zaglavlje-sekcije__naslov">Jednom se ugradi, <em>pa se zaboravi</em></h2>
+      </header>
+
+      <ul class="razlozi">
+        {
+          razlozi.map((r, i) => (
+            <li class="razlog" data-reveal style={`--reveal-delay: ${i * 70}ms`}>
+              <span class="num">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="razlog__naslov h3">{r.naslov}</h3>
+              <p class="razlog__tekst">{r.tekst}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================= PROCES ================= -->
+  <section class="section">
+    <div class="wrap proces__mreza">
+      <div class="proces__tekst" data-reveal>
+        <p class="eyebrow">Kako ide posao</p>
+        <h2 class="h1 proces__naslov">Od poziva do <em>ugradnje</em></h2>
+        <p class="lede proces__lede">
+          Ceo posao traje nedelju do deset dana, a kod vas se radi samo poslednjeg dana.
+        </p>
+        <a class="arrow-link proces__link" href="/modeli/">
+          Izračunaj cenu
+          <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 10h12M11 5l5 5-5 5" />
+          </svg>
+        </a>
+      </div>
+
+      <ol class="koraci">
+        {
+          koraci.map((k, i) => (
+            <li class="korak" data-reveal style={`--reveal-delay: ${i * 80}ms`}>
+              <span class="korak__num num">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3 class="korak__naslov">{k.naslov}</h3>
+                <p class="korak__tekst">{k.tekst}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+</Osnovni>
+
+<style>
+  /* ---------------- HERO ---------------- */
+  .hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-top: clamp(6rem, 18vw, 7rem);
+    overflow: hidden;
+  }
+
+  @media (min-width: 48rem) {
+    .hero {
+      min-height: 100svh;
+    }
+  }
+
+  .hero__poza {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(70% 55% at 78% 18%, var(--glow) 0%, transparent 62%),
+      radial-gradient(90% 70% at 12% 100%, var(--glow-soft) 0%, transparent 58%),
+      linear-gradient(180deg, var(--hero-top) 0%, var(--hero-bottom) 55%, var(--hero-bottom) 100%);
+  }
+
+  .hero__poza::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px);
+    background-size: 25% 100%;
+    mask-image: linear-gradient(to bottom, transparent, #000 30%);
+  }
+
+  .hero__in {
+    position: relative;
+    padding-bottom: clamp(3rem, 8vw, 6rem);
+  }
+
+  .hero__mesto {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .hero__tacka {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--brass);
+    flex: none;
+  }
+
+  .hero__naslov {
+    text-wrap: balance;
+  }
+
+  .hero__dno {
+    display: grid;
+    gap: 2rem;
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+    padding-top: clamp(1.75rem, 4vw, 2.5rem);
+    border-top: 1px solid var(--line);
+  }
+
+  @media (min-width: 56rem) {
+    .hero__dno {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 3rem;
+    }
+  }
+
+  .hero__akcije {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .brojke {
+    position: relative;
+    border-top: 1px solid var(--line);
+    background: var(--bar-bg);
+  }
+
+  .brojke__in {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 56rem) {
+    .brojke__in {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .brojke__st {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: clamp(1.25rem, 3.5vw, 2rem) 0;
+    padding-inline-end: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  @media (min-width: 56rem) {
+    .brojke__st {
+      border-bottom: 0;
+      border-inline-start: 1px solid var(--line);
+      padding-inline-start: clamp(1rem, 2.5vw, 2rem);
+    }
+    .brojke__st:first-child {
+      border-inline-start: 0;
+      padding-inline-start: 0;
+    }
+  }
+
+  @media (min-width: 34rem) and (max-width: 55.999rem) {
+    .brojke__st:nth-child(even) {
+      border-inline-start: 1px solid var(--line);
+      padding-inline-start: 1.5rem;
+    }
+  }
+
+  .brojke__st:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .brojke__broj {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 5vw, 2.75rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--brass);
+  }
+
+  .brojke__lab {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+    text-wrap: balance;
+  }
+
+  /* ---------------- Zajedničko ---------------- */
+  .zaglavlje-sekcije {
+    max-width: 46rem;
+    margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  .zaglavlje-sekcije__naslov {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-wrap: balance;
+  }
+
+  /* ---------------- Modeli ---------------- */
+  .modeli {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .modeli > li {
+    display: flex;
+  }
+
+  .modeli > li > :global(*) {
+    width: 100%;
+  }
+
+  @media (min-width: 44rem) {
+    .modeli {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 76rem) {
+    .modeli {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* ---------------- Traka radova ---------------- */
+  .traka-sek {
+    padding-block: 0 clamp(3rem, 7vw, 5rem);
+  }
+
+  .traka__glava {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .traka__naslov {
+    margin-top: 1.15rem;
+    text-wrap: balance;
+  }
+
+  .traka {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(0.5rem, 1.5vw, 0.85rem);
+  }
+
+  @media (min-width: 40rem) {
+    .traka {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .traka {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+
+  .traka li {
+    overflow: hidden;
+    background: var(--ink-700);
+    aspect-ratio: 3 / 4;
+  }
+
+  .traka :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ---------------- Razlozi ---------------- */
+  .razlozi-sek {
+    background: var(--ink-800);
+    border-block: 1px solid var(--line);
+  }
+
+  .razlozi {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  @media (min-width: 44rem) {
+    .razlozi {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .razlog {
+    background: var(--ink-800);
+    padding: clamp(1.5rem, 3.5vw, 2.5rem);
+    transition: background 0.4s var(--ease);
+  }
+
+  .razlog:hover {
+    background: var(--ink-700);
+  }
+
+  .razlog__naslov {
+    margin-top: 1.25rem;
+    text-wrap: balance;
+  }
+
+  .razlog__tekst {
+    margin-top: 0.85rem;
+    color: var(--paper-dim);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    max-width: 46ch;
+  }
+
+  /* ---------------- Proces ---------------- */
+  .proces__mreza {
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  @media (min-width: 62rem) {
+    .proces__mreza {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      align-items: start;
+    }
+    .proces__tekst {
+      position: sticky;
+      top: 8rem;
+    }
+  }
+
+  .proces__naslov {
+    margin-top: 1.5rem;
+    text-wrap: balance;
+  }
+
+  .proces__lede {
+    margin-top: 1.5rem;
+  }
+
+  .proces__link {
+    margin-top: 2rem;
+  }
+
+  .koraci {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .korak {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1.25rem;
+    padding-block: clamp(1.5rem, 3.5vw, 2.25rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .korak:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .korak__num {
+    padding-top: 0.35em;
+  }
+
+  .korak__naslov {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .korak__tekst {
+    margin-top: 0.6rem;
+    color: var(--paper-dim);
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    max-width: 44ch;
+  }
+</style>

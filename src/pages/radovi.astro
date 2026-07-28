@@ -1,0 +1,305 @@
+---
+import { Image } from 'astro:assets';
+import Osnovni from '../layouts/Osnovni.astro';
+import StranaZaglavlje from '../components/StranaZaglavlje.astro';
+import { sviModeli, galerija, cenaZaPrikaz } from '../lib/modeli';
+import { site } from '../data/site';
+
+const modeli = await sviModeli();
+const grupe = modeli.map((m) => ({ model: m, slike: galerija(m.id) }));
+const ukupno = grupe.reduce((z, g) => z + g.slike.length, 0);
+---
+
+<Osnovni
+  naslov="Radovi"
+  opis={`${ukupno} fotografija ugrađenih tuš kabina, paravana i staklenih ograda u Nišu i okolini.`}
+>
+  <StranaZaglavlje
+    eyebrow="Radovi"
+    naslov="Sve što je"
+    akcenat="ugrađeno"
+    opis={`${ukupno} fotografija sa terena, poređanih po modelu. Kliknite na bilo koju grupu da vidite cenu i izračunate za svoje mere.`}
+  />
+
+  <!-- Prečice do grupa -->
+  <nav class="precice" aria-label="Skok na model">
+    <div class="wrap precice__in">
+      {
+        grupe.map(({ model, slike }) => (
+          <a href={`#${model.id}`} class="precica">
+            {model.data.naziv}
+            <span>{slike.length}</span>
+          </a>
+        ))
+      }
+    </div>
+  </nav>
+
+  {
+    grupe.map(({ model, slike }, gi) => (
+      <section class="grupa" id={model.id}>
+        <div class="wrap">
+          <header class="grupa__glava" data-reveal>
+            <div>
+              <p class="eyebrow">{String(gi + 1).padStart(2, '0')} — {slike.length} fotografija</p>
+              <h2 class="h2 grupa__naslov">{model.data.naslovStrane}</h2>
+              <p class="grupa__kratko">{model.data.kratko}</p>
+            </div>
+
+            <a class="grupa__cena" href={`/modeli/${model.id}/`}>
+              <span class="grupa__od">{cenaZaPrikaz(model).labela}</span>
+              <span class="grupa__iznos">{cenaZaPrikaz(model).iznos}</span>
+              <span class="grupa__val">{cenaZaPrikaz(model).jedinica}</span>
+              <span class="grupa__cta">
+                Cena i kalkulator
+                <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 10h12M11 5l5 5-5 5" />
+                </svg>
+              </span>
+            </a>
+          </header>
+
+          <ul class="mreza">
+            {slike.map((s, i) => (
+              <li data-reveal style={`--reveal-delay: ${(i % 4) * 50}ms`}>
+                <a href={`/modeli/${model.id}/`} aria-label={`${model.data.naziv} — cena i kalkulator`}>
+                  <Image
+                    src={s}
+                    alt={`${model.data.naslovStrane} — primer ${i + 1}`}
+                    widths={[320, 480, 720]}
+                    sizes="(min-width: 62rem) 24vw, (min-width: 40rem) 32vw, 46vw"
+                    loading={gi === 0 && i < 4 ? 'eager' : 'lazy'}
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="section section--tight kraj-sek">
+    <div class="wrap kraj">
+      <h2 class="h3">Slično vašem kupatilu?</h2>
+      <p>
+        Pošaljite fotografiju na Viber i približne mere. Kažem vam koji model staje i koliko
+        otprilike košta, pa se dogovorimo za meru.
+      </p>
+      <a class="btn" href={`tel:${site.phoneHref}`}>Pozovi {site.phone}</a>
+    </div>
+  </section>
+</Osnovni>
+
+<style>
+  /* Prečice — lepe se ispod zaglavlja pri skrolu */
+  .precice {
+    position: sticky;
+    top: 4.5rem;
+    z-index: 20;
+    background: var(--scrim);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--line);
+  }
+
+  @media (min-width: 60rem) {
+    .precice {
+      top: 5.5rem;
+    }
+  }
+
+  .precice__in {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-block: 0.75rem;
+    scrollbar-width: none;
+  }
+
+  .precice__in::-webkit-scrollbar {
+    display: none;
+  }
+
+  .precica {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    flex: none;
+    padding: 0.5em 0.9em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    text-decoration: none;
+    color: var(--paper-dim);
+    white-space: nowrap;
+    transition: color 0.3s var(--ease), border-color 0.3s var(--ease), background 0.3s var(--ease);
+  }
+
+  .precica:hover {
+    color: var(--brass-bright);
+    border-color: var(--brass);
+    background: var(--brass-dim);
+  }
+
+  .precica span {
+    font-size: 0.6875rem;
+    color: var(--paper-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Grupa */
+  .grupa {
+    padding-block: clamp(2.5rem, 6vw, 4.5rem);
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 8rem;
+  }
+
+  .grupa:nth-child(even) {
+    background: var(--ink-800);
+  }
+
+  .grupa__glava {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  @media (min-width: 56rem) {
+    .grupa__glava {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 2rem;
+    }
+  }
+
+  .grupa__naslov {
+    margin-top: 1.15rem;
+    text-wrap: balance;
+  }
+
+  .grupa__kratko {
+    margin-top: 0.75rem;
+    color: var(--paper-dim);
+    max-width: 50ch;
+  }
+
+  .grupa__cena {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+    gap: 0.15rem 0.4rem;
+    justify-content: start;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--ist-border);
+    background: linear-gradient(180deg, var(--ist-tint), transparent 60%), var(--ink-900);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.3s var(--ease);
+  }
+
+  .grupa__cena:hover {
+    background: var(--ink-700);
+  }
+
+  .grupa__od {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  .grupa__iznos {
+    grid-column: 1;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    letter-spacing: -0.03em;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .grupa__val {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--paper-faint);
+  }
+
+  .grupa__cta {
+    grid-column: 1 / -1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+
+  .grupa__cena:hover .grupa__cta svg {
+    transform: translateX(4px);
+  }
+
+  .grupa__cta svg {
+    transition: transform 0.3s var(--ease);
+  }
+
+  /* Mreža fotografija */
+  .mreza {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.5rem, 1.5vw, 0.85rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 40rem) {
+    .mreza {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .mreza {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .mreza li {
+    overflow: hidden;
+    background: var(--ink-700);
+    aspect-ratio: 3 / 4;
+  }
+
+  .mreza a {
+    display: block;
+    height: 100%;
+  }
+
+  .mreza :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s var(--ease);
+  }
+
+  .mreza li:hover :global(img) {
+    transform: scale(1.05);
+  }
+
+  .kraj-sek {
+    border-top: 0;
+  }
+
+  .kraj {
+    max-width: 46rem;
+  }
+
+  .kraj p {
+    margin-block: 1.15rem 2rem;
+    color: var(--paper-dim);
+  }
+</style>

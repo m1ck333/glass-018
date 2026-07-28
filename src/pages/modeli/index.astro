@@ -1,0 +1,212 @@
+---
+import Osnovni from '../../layouts/Osnovni.astro';
+import StranaZaglavlje from '../../components/StranaZaglavlje.astro';
+import ModelKartica from '../../components/ModelKartica.astro';
+import TerenTabela from '../../components/TerenTabela.astro';
+import { sviModeli, CENA_STAKLA, dinar } from '../../lib/modeli';
+import { site } from '../../data/site';
+
+const modeli = await sviModeli();
+---
+
+<Osnovni
+  naslov="Modeli i cene"
+  opis="Tuš kabine, paravani i staklene ograde po meri — osnovna cena po modelu i staklo po kvadratu. Izračunajte za svoje mere."
+>
+  <StranaZaglavlje
+    eyebrow="Modeli i cene"
+    naslov="Izaberite model,"
+    akcenat="pa unesite mere"
+    opis="Cena se sastoji iz dva dela: osnovne cene modela — okov, profili i ugradnja — i stakla, koje se računa po kvadratu prema vašim merama."
+  />
+
+  <!-- Kako se računa -->
+  <section class="section section--tight racun-sek">
+    <div class="wrap racun">
+      <div class="racun__st">
+        <span class="racun__lab">Osnovna cena</span>
+        <span class="racun__vr">po modelu</span>
+        <span class="racun__op">Okov, profili, zaptivke i ugradnja. Razlikuje se od modela do modela.</span>
+      </div>
+      <span class="racun__znak" aria-hidden="true">+</span>
+      <div class="racun__st">
+        <span class="racun__lab">Staklo</span>
+        <span class="racun__vr">{dinar.format(CENA_STAKLA)} <em>RSD/m²</em></span>
+        <span class="racun__op">Kaljeno staklo, računato po površini koju vaše mere daju.</span>
+      </div>
+      <span class="racun__znak" aria-hidden="true">=</span>
+      <div class="racun__st racun__st--ukupno">
+        <span class="racun__lab">Ukupno</span>
+        <span class="racun__vr">vaša cena</span>
+        <span class="racun__op">Kalkulator na strani svakog modela sabira oba dela.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modeli -->
+  <section class="section">
+    <div class="wrap">
+      <header class="zaglavlje-sekcije" data-reveal>
+        <p class="eyebrow">Svi modeli</p>
+        <h2 class="h2 zaglavlje-sekcije__naslov">Osam rešenja, <em>jedna cena po kvadratu</em></h2>
+      </header>
+
+      <ul class="modeli">
+        {
+          modeli.map((m, i) => (
+            <li data-reveal style={`--reveal-delay: ${(i % 4) * 60}ms`}>
+              <ModelKartica model={m} broj={i + 1} eager={i < 4} />
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="napomena" data-reveal>
+        Cene su orijentacione i računaju se za mere koje unesete. Konačna cena se daje posle
+        izlaska na teren — mera je besplatna i ne obavezuje vas.
+      </p>
+    </div>
+  </section>
+
+  <TerenTabela />
+
+  <section class="section section--tight">
+    <div class="wrap kraj">
+      <h2 class="h3">Niste sigurni koji model?</h2>
+      <p>
+        Pošaljite fotografiju kupatila na Viber i približne mere — po slici se vidi skoro sve.
+        Kažem vam šta može da stane i koliko otprilike košta, pa se onda dogovaramo za meru.
+      </p>
+      <a class="btn" href={`tel:${site.phoneHref}`}>Pozovi {site.phone}</a>
+    </div>
+  </section>
+</Osnovni>
+
+<style>
+  /* Kako se računa — tri koraka sa + i = */
+  .racun-sek {
+    background: var(--ink-800);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .racun {
+    display: grid;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  @media (min-width: 56rem) {
+    .racun {
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 1.5rem;
+      align-items: center;
+    }
+  }
+
+  .racun__st {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.25rem;
+    background: var(--ink-900);
+    border: 1px solid var(--line);
+  }
+
+  .racun__st--ukupno {
+    border-color: var(--ist-border);
+    background: linear-gradient(180deg, var(--ist-tint), transparent 60%), var(--ink-900);
+  }
+
+  .racun__lab {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  .racun__vr {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
+    color: var(--brass);
+  }
+
+  .racun__vr em {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--paper-faint);
+  }
+
+  .racun__op {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--paper-faint);
+  }
+
+  .racun__znak {
+    justify-self: center;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--paper-faint);
+  }
+
+  /* Mreža modela */
+  .zaglavlje-sekcije {
+    max-width: 46rem;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  .zaglavlje-sekcije__naslov {
+    margin-top: 1.25rem;
+    text-wrap: balance;
+  }
+
+  .modeli {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  .modeli > li {
+    display: flex;
+  }
+
+  .modeli > li > :global(*) {
+    width: 100%;
+  }
+
+  @media (min-width: 44rem) {
+    .modeli {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 76rem) {
+    .modeli {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .napomena {
+    margin-top: 2rem;
+    font-size: 0.875rem;
+    color: var(--paper-faint);
+    max-width: 52rem;
+  }
+
+  .kraj {
+    max-width: 46rem;
+  }
+
+  .kraj p {
+    margin-block: 1.15rem 2rem;
+    color: var(--paper-dim);
+  }
+</style>

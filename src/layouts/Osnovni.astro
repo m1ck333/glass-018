@@ -1,0 +1,188 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
+
+/**
+ * Latinični rezovi dva pisma koja se stvarno koriste. Učitavaju se unapred,
+ * jer je naslov (Fraunces) najveći element na strani — bez ovoga se prvo
+ * iscrta zamenskim pismom pa preskoči kad pravo stigne.
+ * Ostali rezovi (ćirilica, grčki, vijetnamski) se ne diraju — `unicode-range`
+ * ih i onako nikad ne preuzme za srpsku latinicu.
+ */
+import frauncesLatin from '@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import '../styles/global.css';
+import Zaglavlje from '../components/Zaglavlje.astro';
+import Podnozje from '../components/Podnozje.astro';
+import PozivTraka from '../components/PozivTraka.astro';
+import { site } from '../data/site';
+
+import { sviModeli } from '../lib/modeli';
+
+interface Props {
+  naslov: string;
+  opis: string;
+  /** Hero sekcija ide ispod fiksnog zaglavlja — bez gornjeg razmaka. */
+  hero?: boolean;
+  /** Slika za deljenje (Viber, Facebook). Podrazumevano opšta. */
+  slika?: string;
+}
+
+const { naslov, opis, hero = false, slika = '/og.jpg' } = Astro.props;
+const modeli = await sviModeli();
+/** Grad ide u svaki naslov — pretrage su lokalne („tuš kabine niš"). */
+const punNaslov = `${naslov} — ${site.city} | ${site.kratkoIme}`;
+
+/** Google prikazuje ~155 znakova opisa — duže se svejedno odseca. */
+const skrati = (t: string, granica = 155) =>
+  t.length <= granica ? t : t.slice(0, t.lastIndexOf(' ', granica - 1)).replace(/[.,;:—-]$/, '') + '…';
+const kratakOpis = skrati(opis);
+const kanonski = new URL(Astro.url.pathname, Astro.site).href;
+const slikaUrl = new URL(slika, Astro.site).href;
+
+/** Podaci o firmi za Google. Cene se namerno NE navode dok su izmišljene. */
+const podaciFirme = {
+  '@context': 'https://schema.org',
+  '@type': 'HomeAndConstructionBusiness',
+  name: site.fullName,
+  description: site.tagline,
+  telephone: site.phone,
+  url: new URL('/', Astro.site).href,
+  image: slikaUrl,
+  areaServed: { '@type': 'City', name: site.city },
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: site.city,
+    addressCountry: 'RS',
+  },
+  openingHoursSpecification: [
+    {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: site.radnoVreme.dani,
+      opens: site.radnoVreme.od,
+      closes: site.radnoVreme.do,
+    },
+  ],
+  makesOffer: modeli.map((m) => ({
+    '@type': 'Offer',
+    itemOffered: {
+      '@type': 'Service',
+      name: m.data.naslovStrane,
+      description: m.data.kratko,
+    },
+    url: new URL(`/modeli/${m.id}/`, Astro.site).href,
+  })),
+};
+---
+
+<!doctype html>
+<html lang="sr-Latn-RS">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{punNaslov}</title>
+    <meta name="description" content={kratakOpis} />
+    <link rel="canonical" href={kanonski} />
+    <meta name="theme-color" content="#0c0c0d" />
+
+    {/* Dok je sajt na privremenoj adresi sa izmišljenim cenama — ne indeksirati. */}
+    {site.preview && <meta name="robots" content="noindex, nofollow" />}
+
+    {/* Postavlja temu pre prvog iscrtavanja — bez treperenja pri učitavanju. */}
+    <script is:inline>
+      (() => {
+        const sacuvana = localStorage.getItem('tema');
+        const tema =
+          sacuvana === 'light' || sacuvana === 'dark'
+            ? sacuvana
+            : matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark';
+        document.documentElement.dataset.theme = tema;
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute('content', tema === 'light' ? '#faf7f2' : '#0c0c0d');
+      })();
+    </script>
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="sr_RS" />
+    <meta property="og:site_name" content={site.fullName} />
+    <meta property="og:title" content={punNaslov} />
+    <meta property="og:description" content={kratakOpis} />
+    <meta property="og:url" content={kanonski} />
+    <meta property="og:image" content={slikaUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={site.fullName} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={slikaUrl} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* iOS ne prihvata SVG kad se sajt doda na početni ekran telefona. */}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <link rel="preload" as="font" type="font/woff2" href={frauncesLatin} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin />
+
+    {/* Meki prelaz između strana. Animacija je definisana u global.css. */}
+    <ClientRouter />
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(podaciFirme)} />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#glavni">Preskoči na sadržaj</a>
+    <Zaglavlje />
+    <main id="glavni" class={hero ? '' : 'main--offset'}>
+      <slot />
+    </main>
+    <Podnozje />
+    <PozivTraka />
+
+    <script>
+      // Otkrivanje elemenata pri skrolu.
+      // Pokreće se na svakoj navigaciji, jer se posle prelaza dobija nov DOM.
+      function otkrivanje() {
+        const bezPokreta = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const ciljevi = document.querySelectorAll('[data-reveal]');
+
+        if (bezPokreta || !('IntersectionObserver' in window)) {
+          ciljevi.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+
+        const io = new IntersectionObserver(
+          (unosi) => {
+            unosi.forEach((u) => {
+              if (u.isIntersecting) {
+                u.target.classList.add('is-visible');
+                io.unobserve(u.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
+        );
+        ciljevi.forEach((el) => io.observe(el));
+      }
+
+      // `astro:page-load` se javlja i pri prvom učitavanju i posle svakog prelaza.
+      document.addEventListener('astro:page-load', otkrivanje);
+    </script>
+  </body>
+</html>
+
+<style>
+  /* Strane bez hero sekcije počinju ispod fiksnog zaglavlja */
+  .main--offset {
+    padding-top: 4.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .main--offset {
+      padding-top: 5.5rem;
+    }
+  }
+</style>

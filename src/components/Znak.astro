@@ -1,0 +1,31 @@
+---
+/**
+ * Znak firme — dva staklena panela koja se preklapaju.
+ *
+ * Vektorska rekonstrukcija logotipa (original je PNG u 396 px). Kao SVG je
+ * oštar na svakoj veličini, težak par stotina bajtova i uzima boju iz teksta,
+ * pa radi i u tamnoj i u svetloj temi bez druge verzije.
+ */
+interface Props {
+  class?: string;
+  velicina?: string;
+}
+const { class: className = '', velicina = '1.75rem' } = Astro.props;
+---
+
+<svg
+  class={className}
+  viewBox="0 0 64 64"
+  width={velicina}
+  height={velicina}
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <!-- preklop dva panela -->
+  <rect x="17" y="17" width="30" height="30" fill="currentColor" opacity="0.9" />
+  <!-- zadnji panel -->
+  <rect x="2.75" y="2.75" width="43.5" height="43.5" stroke="currentColor" stroke-width="1.5" />
+  <!-- prednji panel -->
+  <rect x="17.75" y="17.75" width="43.5" height="43.5" stroke="currentColor" stroke-width="1.5" />
+</svg>

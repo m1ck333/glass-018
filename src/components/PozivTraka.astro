@@ -1,0 +1,76 @@
+---
+import { site, viberHref } from '../data/site';
+
+/**
+ * Lepljiva traka na dnu, samo na telefonima.
+ * Sajt se plaća preko oglasa — poziv mora da bude na dohvat palca
+ * na svakoj strani, bez skrolovanja do podnožja.
+ */
+---
+
+<div class="poziv" data-poziv>
+  <a class="poziv__dug poziv__dug--tel" href={`tel:${site.phoneHref}`}>
+    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" />
+    </svg>
+    Pozovi
+  </a>
+
+  <a class="poziv__dug poziv__dug--viber" href={viberHref}>
+    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.8-.9L3 20.5l1.5-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z" />
+    </svg>
+    Viber
+  </a>
+</div>
+
+<style>
+  .poziv {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 90;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem var(--gutter) calc(0.5rem + env(safe-area-inset-bottom));
+    background: var(--scrim);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-top: 1px solid var(--line);
+  }
+
+  /* Na širim ekranima telefon već stoji u zaglavlju */
+  @media (min-width: 62rem) {
+    .poziv {
+      display: none;
+    }
+  }
+
+  .poziv__dug {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    padding: 0.85em 1em;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+
+  .poziv__dug--tel {
+    background: var(--brass);
+    color: var(--ink-900);
+  }
+
+  .poziv__dug--viber {
+    border-color: var(--line-strong);
+    color: var(--paper);
+  }
+
+  .poziv__dug svg {
+    flex: none;
+  }
+</style>

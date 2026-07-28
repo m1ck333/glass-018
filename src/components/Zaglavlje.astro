@@ -1,0 +1,526 @@
+---
+import { site, nav } from '../data/site';
+import Znak from './Znak.astro';
+
+const path = Astro.url.pathname;
+const jeAktivan = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="zag" data-zag>
+  <div class="zag__in wrap">
+    <a href="/" class="zag__logo" aria-label={`${site.name} — početna`}>
+      <Znak class="zag__znak" velicina="1.6rem" />
+      <span class="zag__logo-ime">{site.name}</span>
+      <span class="zag__logo-sub">{site.znak}</span>
+    </a>
+
+    <nav class="zag__nav" aria-label="Glavna navigacija">
+      <ul>
+        {
+          nav.map((s) => (
+            <li>
+              <a href={s.href} aria-current={jeAktivan(s.href) ? 'page' : undefined}>
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a class="zag__tel" href={`tel:${site.phoneHref}`}>
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>
+      </svg>
+      <span>{site.phone}</span>
+    </a>
+
+    <button class="tema" type="button" data-tema aria-pressed="false">
+      <svg class="tema__sun" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4.25" />
+        <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4" />
+      </svg>
+      <svg class="tema__mesec" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a6.8 6.8 0 0 0 11 11Z" />
+      </svg>
+      <span class="visually-hidden" data-tema-tekst>Prebaci na svetlu temu</span>
+    </button>
+
+    <button class="zag__toggle" type="button" aria-expanded="false" aria-controls="meni-mob" data-toggle>
+      <span class="zag__toggle-lines" aria-hidden="true"><i></i><i></i></span>
+      <span class="visually-hidden">Otvori meni</span>
+    </button>
+  </div>
+
+  <!-- Mobilni meni -->
+  <div class="meni" id="meni-mob" data-meni hidden>
+    <nav aria-label="Mobilna navigacija">
+      <ul>
+        {
+          nav.map((s, i) => (
+            <li>
+              <a href={s.href} aria-current={jeAktivan(s.href) ? 'page' : undefined}>
+                <span class="meni__num">{String(i + 1).padStart(2, '0')}</span>
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="meni__dno">
+      <a href={`tel:${site.phoneHref}`} class="btn">
+        Pozovi {site.phone}
+      </a>
+      <p class="meni__radno">{site.workingHours}</p>
+    </div>
+  </div>
+</header>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .zag {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 100;
+    border-bottom: 1px solid transparent;
+    transition: background 0.4s var(--ease), border-color 0.4s var(--ease);
+  }
+
+  /* Zamućenje ide na pseudo-element, NIKAKO na sam .zag.
+     Element sa `backdrop-filter` postaje blok sadržaja za svoje fiksne potomke,
+     pa bi mobilni meni (position: fixed, inset: 4.5rem 0 0) bio ograničen na
+     visinu trake i otvarao se kao tanka linija dok filter ne prestane. */
+  .zag::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    background: var(--scrim);
+    transition: opacity 0.4s var(--ease);
+    pointer-events: none;
+  }
+
+  /* Zatamnjena traka tek kad se skroluje */
+  .zag[data-stanje='skrol']::before {
+    opacity: 1;
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  .zag[data-stanje='skrol'] {
+    border-bottom-color: var(--line);
+  }
+
+  .zag[data-stanje='otvoren'] {
+    background: var(--ink-900);
+  }
+
+  .zag__in {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 3rem);
+    min-height: 4.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .zag__in {
+      min-height: 5.5rem;
+    }
+  }
+
+  /* Logo */
+  .zag__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    margin-inline-end: auto;
+  }
+
+  .zag__znak {
+    flex: none;
+    color: var(--brass);
+  }
+
+  .zag__logo-ime {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .zag__logo-sub {
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  /* Desktop navigacija */
+  .zag__nav {
+    display: none;
+  }
+
+  .zag__nav ul {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.25rem, 2.4vw, 2.5rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .zag__nav a {
+    position: relative;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--paper-dim);
+    padding-block: 0.35em;
+    transition: color 0.3s var(--ease);
+  }
+
+  .zag__nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: var(--brass);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease);
+  }
+
+  .zag__nav a:hover,
+  .zag__nav a[aria-current='page'] {
+    color: var(--paper);
+  }
+
+  .zag__nav a:hover::after,
+  .zag__nav a[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  /* Telefon */
+  .zag__tel {
+    display: none;
+    align-items: center;
+    gap: 0.55em;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: var(--brass);
+    white-space: nowrap;
+    transition: color 0.3s var(--ease);
+  }
+
+  .zag__tel:hover {
+    color: var(--brass-bright);
+  }
+
+  @media (min-width: 62rem) {
+    .zag__nav,
+    .zag__tel {
+      display: flex;
+    }
+  }
+
+  /* Prekidač teme */
+  .tema {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--paper-dim);
+    cursor: pointer;
+    transition:
+      color 0.3s var(--ease),
+      border-color 0.3s var(--ease),
+      background 0.3s var(--ease);
+  }
+
+  .tema:hover {
+    color: var(--brass);
+    border-color: var(--brass);
+    background: var(--brass-dim);
+  }
+
+  /* Obe ikone dele istu ćeliju; prikazuje se ona koja nudi drugu temu */
+  .tema svg {
+    grid-area: 1 / 1;
+    transition:
+      opacity 0.3s var(--ease),
+      transform 0.4s var(--ease);
+  }
+
+  :root[data-theme='dark'] .tema__mesec,
+  :root[data-theme='light'] .tema__sun {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.6);
+  }
+
+  :root[data-theme='dark'] .tema__sun,
+  :root[data-theme='light'] .tema__mesec {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Hamburger */
+  .zag__toggle {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-inline-end: -0.6rem;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    color: var(--paper);
+  }
+
+  .zag__toggle-lines {
+    display: block;
+    width: 22px;
+    height: 12px;
+    position: relative;
+  }
+
+  .zag__toggle-lines i {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transition: transform 0.4s var(--ease), opacity 0.25s var(--ease);
+  }
+
+  .zag__toggle-lines i:nth-child(1) {
+    top: 0;
+  }
+  .zag__toggle-lines i:nth-child(2) {
+    bottom: 0;
+  }
+
+  .zag__toggle[aria-expanded='true'] i:nth-child(1) {
+    transform: translateY(5.25px) rotate(45deg);
+  }
+  .zag__toggle[aria-expanded='true'] i:nth-child(2) {
+    transform: translateY(-5.25px) rotate(-45deg);
+  }
+
+  /* Mora doći POSLE osnovnog `display: grid` da bi ga nadjačalo */
+  @media (min-width: 62rem) {
+    .zag__toggle {
+      display: none;
+    }
+  }
+
+  /* Mobilni meni */
+  .meni {
+    position: fixed;
+    inset: 4.5rem 0 0;
+    background: var(--ink-900);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(1.5rem, 6vw, 3rem) var(--gutter) calc(env(safe-area-inset-bottom) + 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .meni[hidden] {
+    display: none;
+  }
+
+  .meni ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .meni li {
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* Namerno ograničeno na listu u <nav> — da ne pregazi .btn u dnu menija */
+  .meni nav a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding-block: clamp(0.8rem, 2.6vw, 1.1rem);
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 5.5vw, 1.875rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    text-decoration: none;
+    color: var(--paper);
+    transition: color 0.3s var(--ease);
+  }
+
+  .meni nav a:hover,
+  .meni nav a[aria-current='page'] {
+    color: var(--brass);
+  }
+
+  .meni__num {
+    flex: none;
+    width: 1.75rem;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: var(--paper-faint);
+  }
+
+  .meni__dno {
+    padding-top: 2.5rem;
+  }
+
+  .meni__dno .btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .meni__radno {
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    color: var(--paper-faint);
+  }
+
+  /* Ceo panel ulazi u jednom potezu.
+     Pre je svaka stavka imala svoje odlaganje, pa se meni „popunjavao" u dva
+     koraka: dugme na dnu odmah, a spisak posle — što je delovalo kao greška. */
+  @media (prefers-reduced-motion: no-preference) {
+    .meni[data-anim] {
+      animation: meni-ulaz 160ms var(--ease) both;
+    }
+
+    @keyframes meni-ulaz {
+      from {
+        opacity: 0;
+      }
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Skripta se izvršava jednom po učitavanju sajta, ali se posle svakog prelaza
+   * između strana dobija nov DOM. Zato se elementi traže u trenutku upotrebe,
+   * globalni slušaoci vezuju jednom, a slušaoci na elementima iznova na svakoj
+   * navigaciji (`astro:page-load`).
+   */
+  const TEMA = 'tema';
+
+  const zagE = () => document.querySelector<HTMLElement>('[data-zag]');
+  const dugmeE = () => document.querySelector<HTMLButtonElement>('[data-toggle]');
+  const meniE = () => document.querySelector<HTMLElement>('[data-meni]');
+  const temaDugmeE = () => document.querySelector<HTMLButtonElement>('[data-tema]');
+
+  const osveziTemu = (tema: string) => {
+    document.documentElement.dataset.theme = tema;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', tema === 'light' ? '#faf7f2' : '#0c0c0d');
+
+    const dugme = temaDugmeE();
+    dugme?.setAttribute('aria-pressed', String(tema === 'light'));
+    const opis = dugme?.querySelector('[data-tema-tekst]');
+    if (opis) {
+      opis.textContent = tema === 'light' ? 'Prebaci na tamnu temu' : 'Prebaci na svetlu temu';
+    }
+  };
+
+  /** Traka zaglavlja postaje neprozirna posle skrola. */
+  const naSkrol = () => {
+    const zag = zagE();
+    if (!zag || zag.dataset.stanje === 'otvoren') return;
+    if (window.scrollY > 24) zag.dataset.stanje = 'skrol';
+    else delete zag.dataset.stanje;
+  };
+
+  const postaviMeni = (otvoren: boolean) => {
+    const zag = zagE();
+    const dugme = dugmeE();
+    const meni = meniE();
+    if (!zag || !dugme || !meni) return;
+
+    dugme.setAttribute('aria-expanded', String(otvoren));
+    const opis = dugme.querySelector('.visually-hidden');
+    if (opis) opis.textContent = otvoren ? 'Zatvori meni' : 'Otvori meni';
+
+    meni.hidden = !otvoren;
+    document.body.style.overflow = otvoren ? 'hidden' : '';
+
+    if (otvoren) {
+      zag.dataset.stanje = 'otvoren';
+      meni.setAttribute('data-anim', '');
+    } else {
+      delete zag.dataset.stanje;
+      meni.removeAttribute('data-anim');
+      naSkrol();
+    }
+  };
+
+  // ---- Globalni slušaoci: vezuju se samo jednom ----
+  window.addEventListener('scroll', naSkrol, { passive: true });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const dugme = dugmeE();
+    if (dugme?.getAttribute('aria-expanded') === 'true') {
+      postaviMeni(false);
+      dugme.focus();
+    }
+  });
+
+  // Zatvori meni kad se pređe na desktop širinu
+  matchMedia('(min-width: 62rem)').addEventListener('change', (e) => {
+    if (e.matches && dugmeE()?.getAttribute('aria-expanded') === 'true') postaviMeni(false);
+  });
+
+  // Prati sistemsku temu sve dok korisnik sam ne izabere
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+    if (!localStorage.getItem(TEMA)) osveziTemu(e.matches ? 'light' : 'dark');
+  });
+
+  // ---- Vezivanje po strani ----
+  document.addEventListener('astro:page-load', () => {
+    // Posle navigacije meni je uvek zatvoren, pa se skrol vraća.
+    document.body.style.overflow = '';
+
+    dugmeE()?.addEventListener('click', () => {
+      postaviMeni(dugmeE()?.getAttribute('aria-expanded') !== 'true');
+    });
+
+    temaDugmeE()?.addEventListener('click', () => {
+      const nova = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      localStorage.setItem(TEMA, nova);
+      osveziTemu(nova);
+    });
+
+    osveziTemu(document.documentElement.dataset.theme ?? 'dark');
+    naSkrol();
+  });
+</script>

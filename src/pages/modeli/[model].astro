@@ -1,0 +1,441 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Osnovni from '../../layouts/Osnovni.astro';
+import StranaZaglavlje from '../../components/StranaZaglavlje.astro';
+import Kalkulator from '../../components/Kalkulator.astro';
+import TerenTabela from '../../components/TerenTabela.astro';
+import { sviModeli, galerija, predstavnik, cenaZaPrikaz, dinar, CENA_STAKLA } from '../../lib/modeli';
+
+export async function getStaticPaths() {
+  const modeli = await sviModeli();
+  return modeli.map((m, i) => ({
+    params: { model: m.id },
+    props: { model: m, ostali: modeli.filter((_, j) => j !== i) },
+  }));
+}
+
+const { model, ostali } = Astro.props;
+const { Content } = await render(model);
+
+const slike = galerija(model.id);
+const naslovna = predstavnik(model);
+const ostale = slike.filter((s) => s !== naslovna);
+---
+
+<Osnovni naslov={model.data.naziv} opis={model.data.uvod}>
+  <StranaZaglavlje
+    eyebrow="Model"
+    naslov={model.data.naslovStrane}
+    opis={model.data.uvod}
+    mrvice={[
+      { label: 'Početna', href: '/' },
+      { label: 'Modeli i cene', href: '/modeli/' },
+      { label: model.data.naziv },
+    ]}
+  />
+
+  <!-- Fotografija + šta ulazi u cenu -->
+  <section class="section section--tight">
+    <div class="wrap vrh">
+      <div class="vrh__slika" data-reveal>
+        {
+          naslovna && (
+            <Image
+              src={naslovna}
+              alt={model.data.naslovStrane}
+              widths={[480, 720, 1000]}
+              sizes="(min-width: 56rem) 45vw, 92vw"
+              loading="eager"
+              class="vrh__img"
+            />
+          )
+        }
+      </div>
+
+      <div class="vrh__tekst" data-reveal>
+        <p class="eyebrow">Šta ulazi u cenu</p>
+        <ul class="stavke">
+          {model.data.detalji.map((d) => <li>{d}</li>)}
+        </ul>
+
+        <dl class="cene">
+          {
+            model.data.osnovnaCena > 0 && (
+              <div>
+                <dt>Osnovna cena</dt>
+                <dd>{dinar.format(model.data.osnovnaCena)} <em>RSD</em></dd>
+              </div>
+            )
+          }
+          <div>
+            <dt>Staklo</dt>
+            <dd>{dinar.format(CENA_STAKLA)} <em>RSD/m²</em></dd>
+          </div>
+          <div class="cene--zbir">
+            <dt>Ukupno</dt>
+            <dd class="cene__racun">zbir ta dva, po vašim merama</dd>
+          </div>
+        </dl>
+
+        <p class="za-koga"><strong>Kome odgovara:</strong> {model.data.zaKoga}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tekst o modelu -->
+  <section class="section section--tight">
+    <div class="wrap">
+      <div class="proza">
+        <Content />
+      </div>
+    </div>
+  </section>
+
+  <!-- Kalkulator -->
+  <section class="section kalk-sek" id="kalkulator">
+    <div class="wrap">
+      <header class="zaglavlje-sekcije" data-reveal>
+        <p class="eyebrow">Kalkulator</p>
+        <h2 class="h2 zaglavlje-sekcije__naslov">Cena za <em>vaše mere</em></h2>
+      </header>
+      <Kalkulator model={model} />
+    </div>
+  </section>
+
+  <!-- Galerija ovog modela -->
+  {
+    ostale.length > 0 && (
+      <section class="section galerija-sek" id="radovi">
+        <div class="wrap">
+          <header class="zaglavlje-sekcije" data-reveal>
+            <p class="eyebrow">Ugrađeni primeri</p>
+            <h2 class="h2 zaglavlje-sekcije__naslov">
+              Ovaj model <em>na terenu</em>
+            </h2>
+            <p class="lede">
+              {slike.length} fotografija sa gradilišta — bez kataloga i bez tuđih radova.
+            </p>
+          </header>
+
+          <ul class="galerija">
+            {ostale.map((s, i) => (
+              <li data-reveal style={`--reveal-delay: ${(i % 3) * 60}ms`}>
+                <Image
+                  src={s}
+                  alt={`${model.data.naslovStrane} — primer ${i + 2}`}
+                  widths={[320, 480, 720]}
+                  sizes="(min-width: 62rem) 30vw, (min-width: 40rem) 46vw, 92vw"
+                  loading="lazy"
+                />
+              </li>
+            ))}
+          </ul>
+
+          <div class="centar" data-reveal>
+            <a class="btn btn--ghost" href="/radovi/">
+              Svi radovi
+              <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 10h12M11 5l5 5-5 5" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <TerenTabela />
+
+  <!-- Ostali modeli -->
+  <section class="section section--tight">
+    <div class="wrap">
+      <h2 class="eyebrow ostali__lab">Ostali modeli</h2>
+      <ul class="ostali">
+        {
+          ostali.map((m) => (
+            <li>
+              <a href={`/modeli/${m.id}/`} class="ostali__st">
+                <span class="ostali__naziv">{m.data.naziv}</span>
+                <span class="ostali__cena">{cenaZaPrikaz(m).iznos} {cenaZaPrikaz(m).jedinica}</span>
+                <span class="ostali__str" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 10h12M11 5l5 5-5 5" />
+                  </svg>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Osnovni>
+
+<style>
+  .vrh {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .vrh {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  .vrh__slika {
+    background: var(--ink-700);
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+  }
+
+  @media (min-width: 56rem) {
+    .vrh__slika {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  .vrh__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .stavke {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .stavke li {
+    position: relative;
+    padding-inline-start: 1.5rem;
+    font-size: 0.9375rem;
+    color: var(--paper-dim);
+  }
+
+  .stavke li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.82em;
+    top: 0.5lh;
+    width: 8px;
+    height: 1px;
+    background: var(--brass);
+  }
+
+  .cene {
+    margin: 2rem 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .cene > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 0.8rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cene dt {
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    color: var(--paper-faint);
+  }
+
+  .cene dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    color: var(--paper);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .cene--zbir dd {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    color: var(--brass);
+    white-space: normal;
+    text-align: right;
+  }
+
+  .cene dd em {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+    margin-inline-start: 0.4em;
+  }
+
+  .za-koga {
+    margin-top: 1.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--paper-dim);
+  }
+
+  .za-koga strong {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  .proza {
+    max-width: 40rem;
+    font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+    line-height: 1.72;
+    color: var(--paper-dim);
+  }
+
+  .proza :global(p + p) {
+    margin-top: 1.5rem;
+  }
+
+  .proza :global(p:first-child) {
+    color: var(--paper);
+    font-size: 1.1em;
+    line-height: 1.55;
+  }
+
+  .kalk-sek,
+  .galerija-sek {
+    background: var(--ink-800);
+    border-block: 1px solid var(--line);
+  }
+
+  .galerija-sek {
+    border-top: 0;
+  }
+
+  .zaglavlje-sekcije {
+    max-width: 46rem;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  .zaglavlje-sekcije__naslov {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    text-wrap: balance;
+  }
+
+  .galerija {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(0.5rem, 1.5vw, 0.85rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 40rem) {
+    .galerija {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .galerija {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .galerija li {
+    overflow: hidden;
+    background: var(--ink-700);
+    aspect-ratio: 3 / 4;
+  }
+
+  .galerija :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s var(--ease);
+  }
+
+  .galerija li:hover :global(img) {
+    transform: scale(1.05);
+  }
+
+  .centar {
+    display: flex;
+    justify-content: center;
+    margin-top: clamp(2rem, 5vw, 3rem);
+  }
+
+  .ostali__lab {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Modela je uvek 7 (svi osim tekućeg), a 7 se ne deli ni na 2 ni na 4 —
+     zato pravi razmak i ivica po stavci, umesto mreže sa linijom u pozadini.
+     Tako prazno mesto u poslednjem redu ostaje prazno, a ne sivi pravougaonik. */
+  .ostali {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .ostali li {
+    display: flex;
+  }
+
+  .ostali__st {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.2rem 1rem;
+    width: 100%;
+    padding: 1rem 1.15rem;
+    background: var(--ink-900);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+
+  .ostali__st:hover {
+    background: var(--ink-700);
+    border-color: var(--line-strong);
+  }
+
+  .ostali__naziv {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: color 0.3s var(--ease);
+  }
+
+  .ostali__st:hover .ostali__naziv {
+    color: var(--brass-bright);
+  }
+
+  .ostali__cena {
+    grid-column: 1;
+    font-size: 0.8125rem;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ostali__str {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    color: var(--brass);
+    transition: transform 0.3s var(--ease);
+  }
+
+  .ostali__st:hover .ostali__str {
+    transform: translateX(4px);
+  }
+</style>

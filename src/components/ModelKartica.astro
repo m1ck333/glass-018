@@ -1,0 +1,183 @@
+---
+import { Image } from 'astro:assets';
+import { predstavnik, cenaZaPrikaz, type Model } from '../lib/modeli';
+
+interface Props {
+  model: Model;
+  broj: number;
+  eager?: boolean;
+}
+
+const { model, broj, eager = false } = Astro.props;
+const slika = predstavnik(model);
+const cena = cenaZaPrikaz(model);
+---
+
+<article class="mk">
+  <a href={`/modeli/${model.id}/`} class="mk__link">
+    <div class="mk__slika">
+      {
+        slika && (
+          <Image
+            src={slika}
+            alt={model.data.naslovStrane}
+            widths={[320, 480, 640, 900]}
+            sizes="(min-width: 76rem) 24vw, (min-width: 44rem) 46vw, 92vw"
+            loading={eager ? 'eager' : 'lazy'}
+            class="mk__img"
+          />
+        )
+      }
+      <span class="mk__broj num">{String(broj).padStart(2, '0')}</span>
+    </div>
+
+    <div class="mk__telo">
+      <h3 class="mk__naziv h3">{model.data.naziv}</h3>
+      <p class="mk__kratko">{model.data.kratko}</p>
+
+      <p class="mk__lab">{cena.labela}</p>
+      <p class="mk__cena">{cena.iznos}<span class="mk__val">{cena.jedinica}</span></p>
+      <p class="mk__dodatak">{cena.dodatak}</p>
+
+      <span class="mk__cta">
+        Izračunaj i pogledaj radove
+        <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10h12M11 5l5 5-5 5" />
+        </svg>
+      </span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .mk {
+    height: 100%;
+  }
+
+  .mk__link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--ink-900);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.35s var(--ease);
+  }
+
+  .mk__link:hover {
+    background: var(--ink-700);
+  }
+
+  .mk__slika {
+    position: relative;
+    overflow: hidden;
+    background: var(--ink-700);
+    aspect-ratio: 3 / 4;
+  }
+
+  .mk__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.9s var(--ease);
+  }
+
+  .mk__link:hover .mk__img {
+    transform: scale(1.04);
+  }
+
+  .mk__broj {
+    position: absolute;
+    left: 0.85rem;
+    top: 0.85rem;
+    padding: 0.35em 0.7em;
+    background: var(--chip-bg);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+
+  .mk__telo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: clamp(1.15rem, 2.5vw, 1.5rem);
+  }
+
+  .mk__naziv {
+    text-wrap: balance;
+    transition: color 0.35s var(--ease);
+  }
+
+  .mk__link:hover .mk__naziv {
+    color: var(--brass-bright);
+  }
+
+  .mk__kratko {
+    margin-top: 0.6rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--paper-dim);
+    flex: 1;
+  }
+
+  .mk__lab {
+    margin-top: 1.15rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  .mk__dodatak {
+    margin-top: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--paper-faint);
+  }
+
+  .mk__cena {
+    margin-top: 0.35rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mk__val {
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  .mk__val {
+    margin-inline-start: 0.4em;
+  }
+
+  .mk__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 0.9rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+
+  .mk__cta svg {
+    flex: none;
+    transition: transform 0.35s var(--ease);
+  }
+
+  .mk__link:hover .mk__cta svg {
+    transform: translateX(4px);
+  }
+</style>

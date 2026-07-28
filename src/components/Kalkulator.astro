@@ -1,0 +1,603 @@
+---
+import { site, viberHref } from '../data/site';
+import { CENA_STAKLA, MERE_MIN, pocetneMere, udaljenost, dinar, type Model } from '../lib/modeli';
+
+interface Props {
+  model: Model;
+}
+
+const { model } = Astro.props;
+const pocetne = pocetneMere(model);
+
+/** Tri mere, uvek iste. Prazno polje se računa kao nula. */
+const polja = [
+  {
+    kljuc: 'sirina',
+    label: 'Širina',
+    vrednost: pocetne.sirina,
+    opis: 'Staklena strana uz zid.',
+  },
+  {
+    kljuc: 'duzina',
+    label: 'Dužina',
+    vrednost: pocetne.duzina,
+    opis: 'Druga staklena strana — kod ugaonih kabina i ograda.',
+  },
+  {
+    kljuc: 'visina',
+    label: 'Visina',
+    vrednost: pocetne.visina,
+    opis: 'Visina stakla od poda ili od kade.',
+  },
+];
+
+/** Skripta u browseru čita samo ovo — bez ugrađenih podataka u kodu. */
+const konfig = {
+  naziv: model.data.naslovStrane,
+  osnovnaCena: model.data.osnovnaCena,
+  cenaStakla: CENA_STAKLA,
+  min: MERE_MIN,
+  doplate: Object.fromEntries(
+    udaljenost.map((u) => [u.id, { d: u.doplata, upit: Boolean(u.naUpit), naziv: u.naziv }])
+  ),
+};
+---
+
+<script is:inline type="application/json" data-konfig set:html={JSON.stringify(konfig)} />
+
+<div class="kalk" data-kalk>
+  <form class="kalk__forma" data-forma novalidate>
+    <fieldset class="grupa">
+      <legend class="legenda">1 — Mere</legend>
+      <p class="pomoc">
+        Unesite mere u centimetrima. Popunite samo ono što imate — prazno polje se ne računa.
+        Tačna mera se uzima na licu mesta.
+      </p>
+
+      <div class="mere">
+        {
+          polja.map((p) => (
+            <div class="polje">
+              <label for={p.kljuc}>{p.label}</label>
+              <span class="unos">
+                <input
+                  id={p.kljuc}
+                  type="number"
+                  inputmode="numeric"
+                  min={MERE_MIN[p.kljuc as keyof typeof MERE_MIN]}
+                  step="1"
+                  value={p.vrednost > 0 ? p.vrednost : ''}
+                  placeholder="—"
+                  data-mera={p.kljuc}
+                />
+                <span class="jed">cm</span>
+              </span>
+              <p class="polje__opis" data-opis={p.kljuc}>{p.opis}</p>
+              <p class="polje__greska" data-greska={p.kljuc} hidden />
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="formula">
+        Staklo se računa kao <strong>(širina + dužina) × visina</strong>, po {
+          dinar.format(CENA_STAKLA)
+        } RSD po kvadratu.
+      </p>
+    </fieldset>
+
+    <fieldset class="grupa">
+      <legend class="legenda">2 — Gde se ugrađuje</legend>
+      <div class="polje">
+        <label for="udaljenost">Udaljenost od Niša</label>
+        <div class="sel">
+          <select id="udaljenost" data-udaljenost>
+            {
+              udaljenost.map((u, i) => (
+                <option value={u.id} selected={i === 0}>
+                  {u.naziv} ({u.opis})
+                </option>
+              ))
+            }
+          </select>
+          <svg class="sel__strelica" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m4 6 4 4 4-4" />
+          </svg>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+  <aside class="kalk__rezultat">
+    <div class="rez" aria-live="polite">
+      <p class="eyebrow rez__lab">Procena</p>
+
+      <p class="rez__ukupno">
+        <span data-ukupno>—</span>
+        <span class="rez__val">RSD</span>
+      </p>
+
+      <p class="rez__napomena" data-napomena hidden />
+
+      <p class="rez__upit" data-upit hidden>
+        Za ovu udaljenost se prevoz dogovara posebno — iznos iznad je bez putnih troškova.
+      </p>
+
+      <dl class="rez__stavke">
+        {
+          model.data.osnovnaCena > 0 && (
+            <div>
+              <dt>Osnovna cena</dt>
+              <dd data-cena-osnova>—</dd>
+            </div>
+          )
+        }
+        <div>
+          <dt>Staklo <span class="rez__povrsina" data-povrsina /></dt>
+          <dd data-cena-staklo>—</dd>
+        </div>
+        <div data-red-prevoz hidden>
+          <dt>Izlazak na teren</dt>
+          <dd data-cena-prevoz>—</dd>
+        </div>
+      </dl>
+
+      <div class="rez__akcije">
+        <a class="btn" href={`tel:${site.phoneHref}`}>Pozovi {site.phone}</a>
+        <a class="btn btn--ghost" href={viberHref} data-viber>Pošalji mere na Viber</a>
+        <button class="rez__kopiraj" type="button" data-kopiraj>
+          <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="7" y="7" width="9" height="9" rx="1.5" />
+            <path d="M13 7V5.5A1.5 1.5 0 0 0 11.5 4h-6A1.5 1.5 0 0 0 4 5.5v6A1.5 1.5 0 0 0 5.5 13H7" />
+          </svg>
+          <span data-kopiraj-tekst>Kopiraj mere za poruku</span>
+        </button>
+      </div>
+
+      <p class="rez__poruka" data-pregled hidden />
+
+      <p class="rez__sitno">
+        Iznos je orijentacioni i služi da vidite red veličine. Konačna cena se daje posle
+        izlaska na teren, jer na nju utiču i stanje zida, način ugradnje i odabrani okov.
+      </p>
+    </div>
+  </aside>
+</div>
+
+<style>
+  .kalk {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: start;
+  }
+
+  @media (min-width: 62rem) {
+    .kalk {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 4rem;
+    }
+  }
+
+  .kalk__forma {
+    display: grid;
+    gap: clamp(1.75rem, 4vw, 2.5rem);
+    /* Stavka mreže se podrazumevano ne skuplja ispod svog sadržaja. */
+    min-width: 0;
+  }
+
+  .grupa {
+    margin: 0;
+    padding: 1.5rem 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    /* <fieldset> ima podrazumevano min-width: min-content — bez ovoga ne može
+       da se suzi, pa mreža sa merama razvuče celu stranu na telefonu. */
+    min-width: 0;
+  }
+
+  .legenda {
+    padding: 0;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--brass);
+  }
+
+  .pomoc {
+    margin-top: 0.9rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--paper-faint);
+    max-width: 46ch;
+  }
+
+  .mere {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    gap: 1rem;
+    margin-top: 1.35rem;
+    max-width: 34rem;
+  }
+
+  .polje {
+    display: grid;
+    align-content: start;
+    gap: 0.45rem;
+  }
+
+  .polje label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  .polje__opis {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--paper-faint);
+  }
+
+  .polje__greska {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--brass);
+  }
+
+  .unos input[aria-invalid='true'] {
+    border-color: var(--brass);
+  }
+
+  .unos {
+    position: relative;
+    display: block;
+  }
+
+  .polje input,
+  .polje select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: var(--ink-800);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    color: var(--paper);
+    font-size: 1rem; /* 16px — sprečava zumiranje na iOS-u */
+    transition: border-color 0.3s var(--ease), background 0.3s var(--ease);
+  }
+
+  .unos input {
+    padding-inline-end: 2.1rem;
+  }
+
+  .polje input:focus,
+  .polje select:focus {
+    outline: none;
+    border-color: var(--brass);
+    background: var(--ink-700);
+  }
+
+  .jed {
+    position: absolute;
+    right: 0.7rem;
+    top: 50%;
+    translate: 0 -50%;
+    font-size: 0.75rem;
+    color: var(--paper-faint);
+    pointer-events: none;
+  }
+
+  .formula {
+    margin-top: 1.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--paper-faint);
+  }
+
+  .formula strong {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  /* Sopstvena strelica — nativna ne poštuje padding, pa dodiruje ivicu polja */
+  .sel {
+    position: relative;
+    display: block;
+    max-width: 30rem;
+  }
+
+  .sel select {
+    appearance: none;
+    padding-inline-end: 2.75rem;
+  }
+
+  .sel__strelica {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    translate: 0 -50%;
+    color: var(--paper-faint);
+    pointer-events: none;
+    transition: color 0.3s var(--ease);
+  }
+
+  .sel:hover .sel__strelica,
+  .sel select:focus + .sel__strelica {
+    color: var(--brass);
+  }
+
+  /* ---------- Rezultat ---------- */
+  @media (min-width: 62rem) {
+    .kalk__rezultat {
+      position: sticky;
+      top: 7rem;
+    }
+  }
+
+  .rez {
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    background: linear-gradient(180deg, var(--ist-tint), transparent 55%), var(--ink-800);
+    border: 1px solid var(--ist-border);
+  }
+
+  .rez__lab {
+    color: var(--paper-faint);
+  }
+
+  .rez__ukupno {
+    margin-top: 1.25rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 8vw, 3.75rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rez__val {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--paper-faint);
+    margin-inline-start: 0.5em;
+  }
+
+  .rez__napomena {
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--paper-faint);
+  }
+
+  .rez__upit {
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--brass);
+  }
+
+  .rez__stavke {
+    margin: 1.75rem 0 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .rez__stavke > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .rez__stavke dt {
+    font-size: 0.8125rem;
+    color: var(--paper-dim);
+  }
+
+  .rez__povrsina {
+    color: var(--paper-faint);
+  }
+
+  .rez__stavke dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .rez__akcije {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 1.75rem;
+  }
+
+  .rez__akcije :global(.btn) {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .rez__kopiraj {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55em;
+    padding: 0.5em 0;
+    background: none;
+    border: 0;
+    color: var(--paper-faint);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.3s var(--ease);
+  }
+
+  .rez__kopiraj:hover {
+    color: var(--brass);
+  }
+
+  .rez__poruka {
+    margin-top: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: var(--ink-900);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--paper-dim);
+    white-space: pre-line;
+  }
+
+  .rez__sitno {
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--paper-faint);
+  }
+</style>
+
+<script>
+  // Isti račun koji pokriva `npm test` — bez kopije formule u browseru.
+  import { proveriMeru, izracunaj, poruka, type ImeMere } from '../lib/cena';
+
+  /** Pokreće se na svakoj navigaciji — posle prelaza između strana DOM je nov. */
+  function pokreni() {
+    const koren = document.querySelector<HTMLElement>('[data-kalk]');
+    const konfigEl = document.querySelector<HTMLScriptElement>('[data-konfig]');
+    if (!koren || !konfigEl) return;
+
+    const konfig = JSON.parse(konfigEl.textContent ?? '{}') as {
+      naziv: string;
+      osnovnaCena: number;
+      doplate: Record<string, { d: number; upit: boolean; naziv: string }>;
+    };
+
+    const dinar = new Intl.NumberFormat('sr-RS', { maximumFractionDigits: 0 });
+    const broj = new Intl.NumberFormat('sr-RS', { maximumFractionDigits: 2 });
+
+    const nadji = <T extends Element>(sel: string) => koren.querySelector<T>(sel);
+    const tekst = (sel: string, v: string) => {
+      const el = nadji<HTMLElement>(sel);
+      if (el) el.textContent = v;
+    };
+    const vidljivo = (sel: string, v: boolean) => {
+      const el = nadji<HTMLElement>(sel);
+      if (el) el.hidden = !v;
+    };
+
+    const procitaj = (ime: ImeMere) =>
+      proveriMeru(ime, nadji<HTMLInputElement>(`input[data-mera="${ime}"]`)?.value ?? '');
+
+    const prikaziGresku = (ime: string, greska: string) => {
+      const p = nadji<HTMLElement>(`[data-greska="${ime}"]`);
+      const opis = nadji<HTMLElement>(`[data-opis="${ime}"]`);
+      if (p) {
+        p.textContent = greska;
+        p.hidden = greska === '';
+      }
+      // Objašnjenje polja se sklanja dok stoji poruka, da se ne gomila tekst.
+      if (opis) opis.hidden = greska !== '';
+      nadji<HTMLInputElement>(`input[data-mera="${ime}"]`)
+        ?.setAttribute('aria-invalid', greska === '' ? 'false' : 'true');
+    };
+
+    /** Tekst koji mušterija šalje — puni se na svaki izračun. */
+    let zaSlanje = '';
+
+    const isprazni = (napomena: string) => {
+      zaSlanje = '';
+      tekst('[data-ukupno]', '—');
+      tekst('[data-cena-osnova]', '—');
+      tekst('[data-cena-staklo]', '—');
+      tekst('[data-povrsina]', '');
+      tekst('[data-napomena]', napomena);
+      vidljivo('[data-napomena]', napomena !== '');
+      vidljivo('[data-red-prevoz]', false);
+      vidljivo('[data-upit]', false);
+      vidljivo('[data-pregled]', false);
+    };
+
+    const izracunajSve = () => {
+      const sirina = procitaj('sirina');
+      const duzina = procitaj('duzina');
+      const visina = procitaj('visina');
+
+      prikaziGresku('sirina', sirina.greska);
+      prikaziGresku('duzina', duzina.greska);
+      prikaziGresku('visina', visina.greska);
+
+      if (sirina.greska || duzina.greska || visina.greska) {
+        isprazni('Ispravite mere da biste videli cenu.');
+        return;
+      }
+      if (sirina.prazno && duzina.prazno) return isprazni('Unesite širinu ili dužinu.');
+      if (visina.prazno) return isprazni('Unesite visinu.');
+
+      const izbor = nadji<HTMLSelectElement>('[data-udaljenost]');
+      const kljuc = izbor?.value ?? 'grad';
+      const doplata = konfig.doplate[kljuc] ?? { d: 0, upit: false, naziv: '' };
+
+      const r = izracunaj({
+        osnovnaCena: konfig.osnovnaCena,
+        sirina: sirina.v,
+        duzina: duzina.v,
+        visina: visina.v,
+        doplata: doplata.d,
+      });
+
+      vidljivo('[data-napomena]', false);
+      tekst('[data-ukupno]', dinar.format(Math.round(r.ukupno)));
+      tekst('[data-cena-osnova]', `${dinar.format(konfig.osnovnaCena)} RSD`);
+      tekst('[data-cena-staklo]', `${dinar.format(Math.round(r.staklo))} RSD`);
+      tekst('[data-povrsina]', `· ${broj.format(r.povrsina)} m²`);
+
+      vidljivo('[data-red-prevoz]', doplata.d > 0);
+      tekst('[data-cena-prevoz]', `${dinar.format(doplata.d)} RSD`);
+      vidljivo('[data-upit]', doplata.upit);
+
+      zaSlanje = poruka({
+        model: konfig.naziv,
+        sirina: sirina.v,
+        duzina: duzina.v,
+        visina: visina.v,
+        ukupno: r.ukupno,
+        udaljenost: doplata.naziv,
+      });
+    };
+
+    /** Kopira mere u ostavu, da mušterija samo nalepi u Viber. */
+    const kopiraj = async () => {
+      if (!zaSlanje) return;
+      const oznaka = nadji<HTMLElement>('[data-kopiraj-tekst]');
+      try {
+        await navigator.clipboard.writeText(zaSlanje);
+        if (oznaka) {
+          oznaka.textContent = 'Kopirano — nalepite u poruku';
+          setTimeout(() => (oznaka.textContent = 'Kopiraj mere za poruku'), 2500);
+        }
+      } catch {
+        // Ostava ume da bude zabranjena — tada se poruka bar prikaže za ručno kopiranje.
+        const pregled = nadji<HTMLElement>('[data-pregled]');
+        if (pregled) {
+          pregled.textContent = zaSlanje;
+          pregled.hidden = false;
+        }
+      }
+    };
+
+    nadji<HTMLButtonElement>('[data-kopiraj]')?.addEventListener('click', kopiraj);
+    // Uz Viber se mere kopiraju same, pa je dovoljno nalepiti ih u ćaskanje.
+    nadji<HTMLAnchorElement>('[data-viber]')?.addEventListener('click', kopiraj);
+
+    koren.addEventListener('input', izracunajSve);
+    koren.addEventListener('change', izracunajSve);
+    koren.querySelector('form')?.addEventListener('submit', (e) => e.preventDefault());
+
+    izracunajSve();
+  }
+
+  document.addEventListener('astro:page-load', pokreni);
+</script>

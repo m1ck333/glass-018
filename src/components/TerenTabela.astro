@@ -1,0 +1,165 @@
+---
+import { udaljenost } from '../lib/modeli';
+
+/** Naknada za izlazak van Niša — isto objašnjenje na svakoj strani sa cenama. */
+const saDoplatom = udaljenost.filter((u) => u.doplata > 0 || u.naUpit);
+const dinar = new Intl.NumberFormat('sr-RS');
+---
+
+<section class="section section--tight teren-sek">
+  <div class="wrap teren">
+    <div class="teren__tekst">
+      <p class="eyebrow">Izlazak na teren</p>
+      <h2 class="h2 teren__naslov">Rad van <em>Niša</em></h2>
+      <p class="teren__uvod">
+        U Nišu i prigradskim naseljima dolazak, mera i ugradnja ulaze u cenu. Kada se ide dalje,
+        na posao odlazi i ceo dan vožnje, pa se na ukupan iznos dodaje jednokratna naknada za
+        put. Ona pokriva gorivo i vreme, ne i sam rad — cena ugradnje ostaje ista bez obzira na
+        to gde se radi.
+      </p>
+      <p class="teren__uvod">
+        Naknada se plaća jednom po poslu, a ne po dolasku, iako se najčešće dolazi dva puta:
+        prvi put na meru, drugi put na ugradnju.
+      </p>
+    </div>
+
+    <div class="teren__okvir">
+      <table class="teren__tab">
+      <caption class="vh">Naknada za izlazak van Niša</caption>
+      <thead>
+        <tr>
+          <th scope="col">Udaljenost</th>
+          <th scope="col" class="teren__cena-kol">Naknada</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">
+            <span class="teren__naziv">Niš i prigradska naselja</span>
+            <span class="teren__nap">do 25 km</span>
+          </th>
+          <td class="teren__cena teren__cena--free">Bez naknade</td>
+        </tr>
+        {
+          saDoplatom.map((u) => (
+            <tr>
+              <th scope="row">
+                <span class="teren__naziv">{u.naziv}</span>
+                <span class="teren__nap">{u.opis}</span>
+              </th>
+              <td class="teren__cena">
+                {u.naUpit ? 'Po dogovoru' : `${dinar.format(u.doplata)} RSD`}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<style>
+  .vh {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .teren-sek {
+    background: var(--ink-800);
+    border-block: 1px solid var(--line);
+  }
+
+  .teren {
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+
+  @media (min-width: 56rem) {
+    .teren {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  .teren__naslov {
+    margin-top: 1.5rem;
+  }
+
+  .teren__uvod {
+    margin-top: 1.25rem;
+    color: var(--paper-dim);
+    max-width: 50ch;
+  }
+
+  /* Tabele se ne skupljaju ispod sadržaja — bez ovoga bi na uskom ekranu
+     razvukle celu stranu u širinu. */
+  .teren__okvir {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .teren__tab {
+    width: 100%;
+    min-width: 20rem;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .teren__tab thead th {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line-strong);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+  }
+
+  .teren__cena-kol {
+    text-align: right;
+  }
+
+  .teren__tab tbody tr {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .teren__tab tbody th {
+    font-weight: 400;
+    padding-block: 0.9rem;
+    padding-inline-end: 1rem;
+  }
+
+  .teren__naziv {
+    display: block;
+    font-size: 0.9375rem;
+  }
+
+  .teren__nap {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.75rem;
+    color: var(--paper-faint);
+  }
+
+  .teren__cena {
+    padding-block: 0.9rem;
+    text-align: right;
+    vertical-align: top;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    color: var(--brass);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .teren__cena--free {
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    color: var(--paper-faint);
+  }
+</style>

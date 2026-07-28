@@ -1,0 +1,49 @@
+---
+import Osnovni from '../layouts/Osnovni.astro';
+---
+
+<Osnovni naslov="Stranica nije pronađena" opis="Tražena stranica ne postoji.">
+  <section class="ne404">
+    <div class="wrap">
+      <p class="num">Greška 404</p>
+      <h1 class="display ne404__naslov">Ovde <em>nema ničega.</em></h1>
+      <p class="lede ne404__lede">
+        Stranica koju tražite ne postoji ili je premeštena. Probajte preko radova ili se javite
+        telefonom.
+      </p>
+      <div class="ne404__dugmad">
+        <a class="btn" href="/">Nazad na početnu</a>
+        <a class="btn btn--ghost" href="/radovi/">Pogledaj radove</a>
+      </div>
+    </div>
+  </section>
+</Osnovni>
+
+<style>
+  .ne404 {
+    display: flex;
+    align-items: center;
+    min-height: 70svh;
+    padding-block: clamp(4rem, 10vw, 8rem);
+    background:
+      radial-gradient(70% 60% at 80% 10%, var(--glow-page) 0%, transparent 60%),
+      var(--ink-900);
+  }
+
+  .ne404__naslov {
+    margin-top: 1.5rem;
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+
+  .ne404__lede {
+    margin-top: 2rem;
+  }
+
+  .ne404__dugmad {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+    margin-top: 2.5rem;
+  }
+</style>

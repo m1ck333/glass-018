@@ -1,0 +1,169 @@
+---
+import { site, nav, viberHref } from '../data/site';
+const godina = new Date().getFullYear();
+---
+
+<footer class="pod">
+  <div class="wrap">
+    <div class="pod__mreza">
+      <div class="pod__kol">
+        <span class="pod__label">Kontakt</span>
+        <ul>
+          <li><a href={`tel:${site.phoneHref}`}>{site.phone}</a></li>
+          <li><a href={viberHref}>Viber</a></li>
+        </ul>
+      </div>
+
+      <div class="pod__kol">
+        <span class="pod__label">Sajt</span>
+        <ul>
+          {nav.map((s) => <li><a href={s.href}>{s.label}</a></li>)}
+        </ul>
+      </div>
+
+      <div class="pod__kol">
+        <span class="pod__label">Radno vreme</span>
+        <ul>
+          <li>{site.workingHours}</li>
+          <li>{site.region}</li>
+        </ul>
+      </div>
+
+      <div class="pod__kol pod__kol--znak">
+        <span class="pod__znak">{site.name}</span>
+        <p class="pod__znak-sub">Tuš kabine i staklene ograde — {site.city}</p>
+      </div>
+    </div>
+
+    <div class="pod__dno">
+      <p>© {godina} {site.fullName}</p>
+      <p class="pod__autor">
+        Izrada sajta —{' '}
+        <a
+          href="#"
+          data-posta
+          data-korisnik={site.autor.korisnik}
+          data-domen={site.autor.domen}
+          rel="nofollow noopener"
+        >
+          {site.autor.ime}
+        </a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /** Sastavlja mejl adresu tek u browseru — u HTML-u nema `mailto:` za robote. */
+  function povezi() {
+    document.querySelectorAll<HTMLAnchorElement>('[data-posta]').forEach((a) => {
+      // Samo adresa se sastavlja; tekst linka ostaje ime.
+      a.href = `mailto:${a.dataset.korisnik}@${a.dataset.domen}`;
+    });
+  }
+  document.addEventListener('astro:page-load', povezi);
+</script>
+
+<style>
+  .pod {
+    background: var(--ink-800);
+    border-top: 1px solid var(--line);
+    padding-block: clamp(3.5rem, 8vw, 7rem) 2rem;
+  }
+
+  .pod__mreza {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem 2rem;
+    padding-block: 0 clamp(2.5rem, 6vw, 4rem);
+  }
+
+  @media (min-width: 34rem) {
+    .pod__mreza {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 62rem) {
+    .pod__mreza {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr);
+      gap: 2rem;
+    }
+  }
+
+  .pod__label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paper-faint);
+    margin-bottom: 1.25rem;
+  }
+
+  .pod__kol ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .pod__kol a {
+    text-decoration: none;
+    color: var(--paper-dim);
+    transition: color 0.3s var(--ease);
+  }
+
+  .pod__kol a:hover {
+    color: var(--brass-bright);
+  }
+
+  .pod__kol li {
+    color: var(--paper-dim);
+    font-size: 0.9375rem;
+  }
+
+  .pod__kol--znak {
+    align-self: end;
+  }
+
+  .pod__znak {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 9vw, 4rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--ink-600);
+  }
+
+  .pod__znak-sub {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--paper-faint);
+  }
+
+  .pod__autor a {
+    color: var(--paper-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+  }
+
+  .pod__autor a:hover {
+    color: var(--brass-bright);
+    border-color: var(--brass);
+  }
+
+  .pod__dno {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.75rem;
+    color: var(--paper-faint);
+  }
+</style>

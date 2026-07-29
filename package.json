@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --experimental-strip-types --test test/*.test.ts"
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "ops": "node scripts/ops-check.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

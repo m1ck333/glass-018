@@ -71,6 +71,14 @@ export const site = {
    * jer služe za proveru pre puštanja.
    */
   pagesDomen: 'glass018.pages.dev',
+
+  /**
+   * Cloudflare Web Analytics — besplatno, bez kolačića, ne traži pristanak.
+   * Ubacuje se ručno jer automatsko ubacivanje na Pages sajtovima ne radi
+   * pouzdano, a tiho daje nula podataka (statistika ostane prazna mesecima
+   * a niko ne zna zašto). Ovako je u kodu i može da se proveri.
+   */
+  analitikaToken: 'ccf22241b9e446bd857250768166c8ee',
 } as const;
 
 /** Viber deep link — radi i na telefonu i na desktop aplikaciji. */

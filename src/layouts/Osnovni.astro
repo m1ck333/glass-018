@@ -153,6 +153,14 @@ const podaciFirme = {
     <Podnozje />
     <PozivTraka />
 
+    <!-- Cloudflare Web Analytics -->
+    <script
+      is:inline
+      type="module"
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token: site.analitikaToken })}
+    />
+
     <script>
       // Otkrivanje elemenata pri skrolu.
       // Pokreće se na svakoj navigaciji, jer se posle prelaza dobija nov DOM.

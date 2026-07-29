@@ -19,9 +19,9 @@ export const site = {
   tagline: 'Tuš kabine, paravani i staklene ograde po meri — izrada i ugradnja.',
   city: 'Niš',
   region: 'Niš i okolina',
-  yearsExperience: 15,
-  /** Broj ugrađenih kabina i ograda. */
-  projectsDone: 400,
+  yearsExperience: 10,
+  /** Broj ugrađenih kabina, vrata i ograda. */
+  projectsDone: 1000,
 
   phone: '+381 65 5246 282',
   phoneHref: '+381655246282',
@@ -62,7 +62,15 @@ export const site = {
    *
    * Postaviti na `false` u istom koraku kad se uveže pravi domen.
    */
-  preview: true,
+  preview: false,
+
+  /**
+   * Privremena adresa projekta na Cloudflare Pages. Ne može da se obriše, pa se
+   * posetioci sa nje šalju na pravi domen — da se dve iste adrese ne bore u
+   * Google rezultatima. Adrese pojedinačnih deploy-eva (heš ispred) se ne diraju,
+   * jer služe za proveru pre puštanja.
+   */
+  pagesDomen: 'glass018.pages.dev',
 } as const;
 
 /** Viber deep link — radi i na telefonu i na desktop aplikaciji. */

@@ -8,7 +8,10 @@ Niša). Njegovo lično ime neće biti u imenu firme.
 ne klasičan portfolio. Otud: malo strana, cena vidljiva odmah, telefon i Viber
 na dohvat ruke svuda, strane modela kao dolazne strane za oglase.
 
-Uživo: <https://glass018.pages.dev> (još `noindex`, bez pravog domena)
+Uživo: <https://glass018.rs> — indeksiranje uključeno (`site.preview = false`).
+`glass018.pages.dev` i dalje postoji (ne može da se obriše) ali skripta u
+`Osnovni.astro` sa nje šalje na pravi domen, da se dve iste adrese ne bore u
+Google rezultatima.
 
 ## Komande
 
@@ -123,16 +126,16 @@ Chrome ekstenzija je povezana. Stranu učitati u `<iframe>` širine 390 px i na�
 elemente kojima `getBoundingClientRect().right` prelazi `clientWidth` — tako je
 nađeno prelivanje koje se iz koda nije videlo.
 
-## Pre puštanja u rad
+## Šta je ostalo (dashboard, token ne može)
 
-1. Sa Milanom potvrditi podatke koji nisu stigli od njega — doplate za put,
-   rokove, garanciju, godine iskustva, broj radova, najmanje mere i tekstove
-   modela. (Detaljan spisak je u memoriji projekta.)
-2. `site.preview = false` u `src/data/site.ts` — skida `noindex` i otvara
-   `robots.txt`.
-3. `site:` u `astro.config.mjs` → pravi domen (kanonske adrese, sitemap, robots).
-4. U Cloudflare dashboardu: Redirect Rule za apex↔www i Web Analytics — API
-   token ne može ni jedno ni drugo. Vidi `~/Projects/CLOUDFLARE_MIGRATION_GUIDE.md`.
+1. **Redirect Rule** apex↔www.
+2. **Cloudflare Web Analytics** za `glass018.rs`.
+3. **Google Search Console** — dodati domen i poslati sitemap.
+4. **Google Business Profile** — besplatno i najvažnije za lokalnu pretragu;
+   pripremljen tekst je u `docs/google-profil.md`.
+
+Podaci koje Milan nije potvrdio: najmanje mere (30/30/100 cm), radno vreme i
+opisi modela (moja formulacija po njegovim slikama — svesno pušteno tako).
 
 ## Struktura
 

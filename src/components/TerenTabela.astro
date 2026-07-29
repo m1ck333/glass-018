@@ -1,8 +1,12 @@
 ---
 import { udaljenost } from '../lib/modeli';
 
-/** Naknada za izlazak van Niša — isto objašnjenje na svakoj strani sa cenama. */
-const saDoplatom = udaljenost.filter((u) => u.doplata > 0 || u.naUpit);
+/**
+ * Naknada za izlazak van Niša — isto objašnjenje na svakoj strani sa cenama.
+ * Tabela se crta iz `udaljenost`, uključujući i besplatnu zonu — ranije je taj
+ * prvi red bio upisan ručno pa je ostao na „do 25 km" kad su se cene promenile.
+ */
+const redovi = udaljenost;
 const dinar = new Intl.NumberFormat('sr-RS');
 ---
 
@@ -33,22 +37,15 @@ const dinar = new Intl.NumberFormat('sr-RS');
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">
-            <span class="teren__naziv">Niš i prigradska naselja</span>
-            <span class="teren__nap">do 25 km</span>
-          </th>
-          <td class="teren__cena teren__cena--free">Bez naknade</td>
-        </tr>
         {
-          saDoplatom.map((u) => (
+          redovi.map((u) => (
             <tr>
               <th scope="row">
                 <span class="teren__naziv">{u.naziv}</span>
                 <span class="teren__nap">{u.opis}</span>
               </th>
-              <td class="teren__cena">
-                {u.naUpit ? 'Po dogovoru' : `${dinar.format(u.doplata)} RSD`}
+              <td class:list={['teren__cena', u.doplata === 0 && !u.naUpit && 'teren__cena--free']}>
+                {u.naUpit ? 'Po dogovoru' : u.doplata === 0 ? 'Bez naknade' : `${dinar.format(u.doplata)} RSD`}
               </td>
             </tr>
           ))

@@ -45,7 +45,10 @@ const slikaUrl = new URL(slika, Astro.site).href;
 const podaciFirme = {
   '@context': 'https://schema.org',
   '@type': 'HomeAndConstructionBusiness',
-  name: site.fullName,
+  // Ime mora da bude ISTO kao na Google profilu firme — Google poredi naziv,
+  // telefon i adresu sa sajta i profila; razlika slabi lokalno rangiranje.
+  name: site.name,
+  legalName: site.fullName,
   description: site.tagline,
   telephone: site.phone,
   url: new URL('/', Astro.site).href,
@@ -88,6 +91,14 @@ const podaciFirme = {
 
     {/* Dok je sajt na privremenoj adresi sa izmišljenim cenama — ne indeksirati. */}
     {site.preview && <meta name="robots" content="noindex, nofollow" />}
+
+    {/* Sa privremene pages.dev adrese šalje na pravi domen. Ide pre svega
+        ostalog, da se stranica ne iscrtava bez potrebe. */}
+    <script is:inline define:vars={{ pagesDomen: site.pagesDomen, pravi: new URL(kanonski).host }}>
+      if (location.hostname === pagesDomen) {
+        location.replace('https://' + pravi + location.pathname + location.search + location.hash);
+      }
+    </script>
 
     {/* Postavlja temu pre prvog iscrtavanja — bez treperenja pri učitavanju. */}
     <script is:inline>

@@ -33,6 +33,9 @@ const modeli = defineCollection({
     labelA: z.string().default('Širina'),
     labelB: z.string().default('Dubina'),
 
+    /** Dok je `false`, model se nigde ne prikazuje — čeka podatke od Milana.
+     *  Tako slike i tekst mogu da stoje spremni, a da sajt ostane tačan. */
+    objavljeno: z.boolean().default(true),
     /** Redni broj slike iz foldera koja predstavlja model (1 = prva). */
     predstavnik: z.number().default(1),
     redosled: z.number(),

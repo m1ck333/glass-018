@@ -29,7 +29,9 @@ export function predstavnik(model: Model): ImageMetadata | undefined {
 /** Svi modeli, poređani kako je zadato u sadržaju. */
 export async function sviModeli(): Promise<Model[]> {
   const modeli = await getCollection('modeli');
-  return modeli.sort((a, b) => a.data.redosled - b.data.redosled);
+  return modeli
+    .filter((m) => m.data.objavljeno)
+    .sort((a, b) => a.data.redosled - b.data.redosled);
 }
 
 // ---------------------------------------------------------------------------
@@ -56,11 +58,11 @@ export type Udaljenost = {
 };
 
 export const udaljenost: Udaljenost[] = [
-  { id: 'grad', naziv: 'Niš i prigradska naselja', opis: 'do 25 km', doplata: 0 },
-  { id: 'blizu', naziv: 'Bliža okolina', opis: '25 – 60 km', doplata: 2500 },
-  { id: 'srednje', naziv: 'Šire područje', opis: '60 – 120 km', doplata: 5000 },
-  { id: 'daleko', naziv: 'Udaljeni gradovi', opis: '120 – 250 km', doplata: 8500 },
-  { id: 'upit', naziv: 'Preko 250 km', opis: 'dogovor', doplata: 0, naUpit: true },
+  { id: 'grad', naziv: 'Niš i okolina', opis: 'do 30 km', doplata: 0 },
+  { id: 'blizu', naziv: 'Bliža okolina', opis: '30 – 70 km', doplata: 4000 },
+  { id: 'srednje', naziv: 'Šire područje', opis: '70 – 150 km', doplata: 8000 },
+  { id: 'daleko', naziv: 'Udaljeni gradovi', opis: '150 – 300 km', doplata: 14000 },
+  { id: 'upit', naziv: 'Preko 300 km', opis: 'dogovor', doplata: 0, naUpit: true },
 ];
 
 /**

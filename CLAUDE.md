@@ -152,10 +152,10 @@ Ostalo je jedino **Google Business Profile** — kod Milana je, tekst i
 fotografije su spremljeni u `~/Documents/google-business-milan/`. Za lokalnu
 pretragu vredi više od svega na sajtu.
 
-Podaci koje Milan nije potvrdio: najmanje mere (30/30/100 cm), radno vreme,
-opisi modela i okov u `detalji:` — „točkići na ležaju" (tri klizna modela),
-„magnetna zaptivka" i „ručka od nerđajućeg čelika" (`ravna-sarke`). Sve to je
-moja formulacija po njegovim slikama, svesno pušteno tako.
+Deo podataka Milan još nije potvrdio — najmanje mere (30/30/100 cm), radno
+vreme i opisi modela su moja formulacija po njegovim slikama, svesno puštena
+tako. Spisak stoji u memoriji, ne ovde: repo je javan, a spisak nepotvrđenih
+tvrdnji o tuđem poslu nije za javnost.
 
 ## Struktura
 

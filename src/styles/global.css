@@ -101,7 +101,7 @@
 :root {
 
   /* Tipografija */
-  --font-display: 'Fraunces Variable', 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-display: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --font-body: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Ritam */
@@ -203,41 +203,41 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.02;
-  letter-spacing: -0.025em;
-  font-variation-settings: 'SOFT' 0, 'WONK' 1, 'opsz' 60;
+  letter-spacing: -0.02em;
 }
 
 .display {
   font-size: clamp(3rem, 1.6rem + 7vw, 8.5rem);
-  line-height: 0.92;
-  letter-spacing: -0.04em;
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.03em;
 }
 
 .h1 {
   font-size: clamp(2.5rem, 1.6rem + 4.2vw, 5.5rem);
-  line-height: 0.96;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.025em;
 }
 
 .h2 {
   font-size: clamp(1.9rem, 1.4rem + 2.4vw, 3.5rem);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
 }
 
 .h3 {
   font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.75rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
 }
 
 /* Naglašena reč u naslovu — mesingana kurzivna */
 em,
 .accent {
   font-style: italic;
-  font-variation-settings: 'SOFT' 40, 'WONK' 1, 'opsz' 60;
   color: var(--brass);
 }
 

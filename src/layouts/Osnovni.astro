@@ -1,16 +1,16 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import '@fontsource-variable/fraunces';
+import '@fontsource-variable/source-serif-4';
 import '@fontsource-variable/inter';
 
 /**
  * Latinični rezovi dva pisma koja se stvarno koriste. Učitavaju se unapred,
- * jer je naslov (Fraunces) najveći element na strani — bez ovoga se prvo
+ * jer je naslov (Source Serif 4) najveći element na strani — bez ovoga se prvo
  * iscrta zamenskim pismom pa preskoči kad pravo stigne.
  * Ostali rezovi (ćirilica, grčki, vijetnamski) se ne diraju — `unicode-range`
  * ih i onako nikad ne preuzme za srpsku latinicu.
  */
-import frauncesLatin from '@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url';
+import serifLatin from '@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2?url';
 import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import '../styles/global.css';
 import Zaglavlje from '../components/Zaglavlje.astro';
@@ -160,7 +160,7 @@ const podaciFirme = {
     {/* iOS ne prihvata SVG kad se sajt doda na početni ekran telefona. */}
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <link rel="preload" as="font" type="font/woff2" href={frauncesLatin} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={serifLatin} crossorigin />
     <link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin />
 
     {/* Meki prelaz između strana. Animacija je definisana u global.css. */}

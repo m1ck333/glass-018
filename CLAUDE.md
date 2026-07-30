@@ -117,6 +117,16 @@ smanjene na 1600 px.
 - Posle izmene stilova komponente Vite ume da servira **stari** CSS. Ako se
   izmena ne vidi u `npm run dev`, proveriti `dist` pre nego što se traži greška
   u kodu.
+- **`font-variation-settings` tiho ne radi ako fajl ne sadrži tu osu.** Naslovi
+  su mesecima imali `'SOFT' 0, 'WONK' 1, 'opsz' 60`, a uvozili smo `wght`
+  podskup — brauzer prihvati deklaraciju i ignoriše je. Pre postavljanja ose
+  proveriti koji fajl `index.css` paketa zaista uvozi.
+- **Kurziv (`em`, `.accent`) je lažan** — `@fontsource-variable/*/index.css` ne
+  sadrži italic, pa ga brauzer sam iskosi. Pravi kurziv je u `wght-italic.css`
+  istog paketa, oko 45 KB. Svesno nije uključen.
+- **Pismo se menja na jednom mestu** (`--font-display` u `global.css`) jer nigde
+  nije tvrdo kodirano — svih 15 mesta ide kroz promenljivu. Jedini izuzetak je
+  `public/og.jpg`, gde je „Glass 018" upečen u sliku.
 - Mreža sa neparnim brojem stavki (7 modela u 4 kolone) ostavlja praznu ćeliju
   koja se vidi kao siv pravougaonik ako se koristi trik sa pozadinskom linijom.
 - **Razmak napravljen samo CSS marginom ne postoji u tekstu.** Broj i jedinica
@@ -176,7 +186,7 @@ test/             npm test
 
 ## Dizajn
 
-Tamni editorijal: ugalj `#0c0c0d` + mesing `#c8a26a`, Fraunces za naslove,
+Tamni editorijal: ugalj `#0c0c0d` + mesing `#c8a26a`, Source Serif 4 za naslove,
 Inter za tekst. Svetla tema ima toplu bež podlogu i potamnjen mesing radi
 kontrasta. Fontovi lokalno (`@fontsource`), bez poziva ka Google Fonts.
 

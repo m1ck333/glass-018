@@ -36,7 +36,10 @@ const cena = cenaZaPrikaz(model);
       <p class="mk__kratko">{model.data.kratko}</p>
 
       <p class="mk__lab">{cena.labela}</p>
-      <p class="mk__cena">{cena.iznos}<span class="mk__val">{cena.jedinica}</span></p>
+      {/* Razmak mora da postoji i u HTML-u, ne samo kao CSS margina: Google
+          čita tekst bez stilova, pa je u rezultatima pisalo „6.700RSD".
+          Nerazdvojni razmak, da broj i jedinica ne odu u dva reda. */}
+      <p class="mk__cena">{cena.iznos}&#160;<span class="mk__val">{cena.jedinica}</span></p>
       <p class="mk__dodatak">{cena.dodatak}</p>
 
       <span class="mk__cta">
@@ -157,7 +160,7 @@ const cena = cenaZaPrikaz(model);
   }
 
   .mk__val {
-    margin-inline-start: 0.4em;
+    margin-inline-start: 0.05em;
   }
 
   .mk__cta {

@@ -41,6 +41,24 @@ const kratakOpis = skrati(opis);
 const kanonski = new URL(Astro.url.pathname, Astro.site).href;
 const slikaUrl = new URL(slika, Astro.site).href;
 
+/**
+ * Ime sajta — ono što Google piše u sivoj liniji IZNAD naslova u rezultatima.
+ *
+ * Ne uzima se iz `<title>` ni iz podataka o firmi, već iz `WebSite` bloka, i
+ * to **samo sa početne strane** (mora da stoji u korenu domena). Bez njega
+ * Google tu ispiše golu adresu — „glass018.rs" umesto „Glass 018".
+ *
+ * Kratko ime, isto kao na profilu firme. Duži naziv ide kao `alternateName`.
+ */
+const jePocetna = Astro.url.pathname === '/';
+const podaciSajta = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: site.name,
+  alternateName: site.fullName,
+  url: new URL('/', Astro.site).href,
+};
+
 /** Podaci o firmi za Google. Cene se namerno NE navode dok su izmišljene. */
 const podaciFirme = {
   '@context': 'https://schema.org',
@@ -120,7 +138,8 @@ const podaciFirme = {
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="sr_RS" />
-    <meta property="og:site_name" content={site.fullName} />
+    {/* Isto ime kao u `WebSite` bloku — Google ovo čita kao ime sajta. */}
+    <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={punNaslov} />
     <meta property="og:description" content={kratakOpis} />
     <meta property="og:url" content={kanonski} />
@@ -147,7 +166,8 @@ const podaciFirme = {
     {/* Meki prelaz između strana. Animacija je definisana u global.css. */}
     <ClientRouter />
 
-<script is:inline type="application/ld+json" set:html={JSON.stringify(podaciFirme)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(podaciFirme)} />
+    {jePocetna && <script is:inline type="application/ld+json" set:html={JSON.stringify(podaciSajta)} />}
   </head>
 
   <body>

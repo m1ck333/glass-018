@@ -7,7 +7,7 @@ const godina = new Date().getFullYear();
   <div class="wrap">
     <div class="pod__mreza">
       <div class="pod__kol">
-        <span class="pod__label">Kontakt</span>
+        <h2 class="pod__label">Kontakt</h2>
         <ul>
           <li><a href={`tel:${site.phoneHref}`}>{site.phone}</a></li>
           <li><a href={viberHref}>Viber</a></li>
@@ -15,14 +15,14 @@ const godina = new Date().getFullYear();
       </div>
 
       <div class="pod__kol">
-        <span class="pod__label">Sajt</span>
+        <h2 class="pod__label">Sajt</h2>
         <ul>
           {nav.map((s) => <li><a href={s.href}>{s.label}</a></li>)}
         </ul>
       </div>
 
       <div class="pod__kol">
-        <span class="pod__label">Radno vreme</span>
+        <h2 class="pod__label">Radno vreme</h2>
         <ul>
           <li>{site.workingHours}</li>
           <li>{site.region}</li>
@@ -93,6 +93,7 @@ const godina = new Date().getFullYear();
 
   .pod__label {
     display: block;
+    margin-top: 0;
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.22em;

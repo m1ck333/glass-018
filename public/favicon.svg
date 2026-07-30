@@ -1,5 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect x="17" y="17" width="30" height="30" fill="#c8a26a" opacity="0.9"/>
-  <rect x="2.75" y="2.75" width="43.5" height="43.5" stroke="#c8a26a" stroke-width="1.5"/>
-  <rect x="17.75" y="17.75" width="43.5" height="43.5" stroke="#c8a26a" stroke-width="1.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="10" fill="#0c0c0d"/>
+  <g stroke="#c8a26a" stroke-width="4" fill="none">
+    <rect x="10" y="10" width="30" height="30"/>
+    <rect x="24" y="24" width="30" height="30"/>
+  </g>
+  <rect x="24" y="24" width="16" height="16" fill="#c8a26a"/>
 </svg>

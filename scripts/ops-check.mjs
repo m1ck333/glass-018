@@ -18,7 +18,6 @@ import crypto from 'node:crypto';
 const SAJT = 'https://glass018.rs';
 const GSC_SITE = 'sc-domain:glass018.rs';
 const CF_NALOG = '2fb3d178d5f36a51bbee103ec69d3ef7';
-const CF_ZONA = '1353403f7ec6636abdadba44370b99e5';
 
 const dom = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
 const naslov = (t) => console.log(`\n\x1b[1m${t}\x1b[0m`);

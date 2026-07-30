@@ -119,6 +119,17 @@ smanjene na 1600 px.
   u kodu.
 - Mreža sa neparnim brojem stavki (7 modela u 4 kolone) ostavlja praznu ćeliju
   koja se vidi kao siv pravougaonik ako se koristi trik sa pozadinskom linijom.
+- **Razmak napravljen samo CSS marginom ne postoji u tekstu.** Broj i jedinica
+  su bili `{iznos}<span>{jedinica}</span>` sa `margin-inline-start` — ljudima
+  lepo, a Google je u rezultatima ispisao „6.700RSD". Razmak mora u HTML
+  (`&#160;`, da broj i jedinica ne odu u dva reda). Isto važi za čitače ekrana.
+- **Znak se u Google rezultatima crta u 16 px.** Prvi `favicon.svg` je bio
+  proziran, sa linijama `stroke-width: 1.5` na platnu od 64 — u 16 px je to
+  0.375 px, pa se znak izgubio i Google je pokazivao globus. Treba tamna
+  podloga, debele linije i raster u veličini deljivoj sa 48 (Google to traži).
+- **Ime sajta iznad naslova u rezultatima nije `<title>`.** Google ga uzima iz
+  `WebSite` bloka i to samo sa početne strane; bez njega piše gola adresa.
+  Podaci o firmi (`HomeAndConstructionBusiness`) za to ne služe.
 
 ## Provera rasporeda bez screenshot-a
 
@@ -126,16 +137,25 @@ Chrome ekstenzija je povezana. Stranu učitati u `<iframe>` širine 390 px i na�
 elemente kojima `getBoundingClientRect().right` prelazi `clientWidth` — tako je
 nađeno prelivanje koje se iz koda nije videlo.
 
-## Šta je ostalo (dashboard, token ne može)
+## Stanje na Google-u i Cloudflare-u
 
-1. **Redirect Rule** apex↔www.
-2. **Cloudflare Web Analytics** za `glass018.rs`.
-3. **Google Search Console** — dodati domen i poslati sitemap.
-4. **Google Business Profile** — besplatno i najvažnije za lokalnu pretragu;
-   pripremljen tekst je u `docs/google-profil.md`.
+Završeno: Redirect Rule www→apex, Web Analytics (ručni snippet, ne automatski),
+Search Console (Domain property, sitemap poslat, servisni nalog dodat kao
+Restricted), zatraženo indeksiranje za početnu, `/modeli/`, `/radovi/` i dva
+modela.
 
-Podaci koje Milan nije potvrdio: najmanje mere (30/30/100 cm), radno vreme i
-opisi modela (moja formulacija po njegovim slikama — svesno pušteno tako).
+`npm run ops` pokaže sve odjednom — strane, redirect, beacon, `noindex`, broj
+modela i fotografija, posete i pretrage. Ključ stoji van repoa (repo je javan):
+`~/.config/glass018.rs/gsc-key.json`.
+
+Ostalo je jedino **Google Business Profile** — kod Milana je, tekst i
+fotografije su spremljeni u `~/Documents/google-business-milan/`. Za lokalnu
+pretragu vredi više od svega na sajtu.
+
+Podaci koje Milan nije potvrdio: najmanje mere (30/30/100 cm), radno vreme,
+opisi modela i okov u `detalji:` — „točkići na ležaju" (tri klizna modela),
+„magnetna zaptivka" i „ručka od nerđajućeg čelika" (`ravna-sarke`). Sve to je
+moja formulacija po njegovim slikama, svesno pušteno tako.
 
 ## Struktura
 

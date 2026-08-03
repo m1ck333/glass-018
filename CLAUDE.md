@@ -155,7 +155,9 @@ Restricted), zatraženo indeksiranje za početnu, `/modeli/`, `/radovi/` i dva
 modela.
 
 `npm run ops` pokaže sve odjednom — strane, redirect, beacon, `noindex`, broj
-modela i fotografija, posete i pretrage. Ključ stoji van repoa (repo je javan):
+modela i fotografija, posete, pretrage (sa poređenjem prema prethodnih 7 dana i
+izdvojenim pretragama na 2. strani Google-a) i stanje indeksiranja svake strane
+preko URL Inspection API-ja. Ključ stoji van repoa (repo je javan):
 `~/.config/glass018.rs/gsc-key.json`.
 
 Ostalo je jedino **Google Business Profile** — kod Milana je, tekst i

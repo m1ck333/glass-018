@@ -165,48 +165,162 @@ async function gscToken(kljuc) {
   return (await r.json()).access_token;
 }
 
+/** Pretrage i strane iz Search Console-a, sa poređenjem prema prethodnoj nedelji. */
+async function gscUpit(tok, telo) {
+  const r = await fetch(
+    `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE)}/searchAnalytics/query`,
+    {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+      body: JSON.stringify(telo),
+    }
+  );
+  return r.json();
+}
+
+/**
+ * Da li je Google stvarno indeksirao stranu — isto što i „URL Inspection" u
+ * Search Console-u, samo za sve strane odjednom. Ovo je jedina provera koja
+ * hvata „Discovered - currently not indexed": strana postoji, sitemap je
+ * ispravan, a Google je jednostavno nije uzeo.
+ */
+async function proveriIndeksiranje(tok, adrese) {
+  naslov('INDEKSIRANJE');
+  const stanja = new Map();
+  for (const adresa of adrese) {
+    try {
+      const r = await fetch('https://searchconsole.googleapis.com/v1/urlInspection/index:inspect', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inspectionUrl: adresa, siteUrl: GSC_SITE }),
+      });
+      const j = await r.json();
+      if (j.error) {
+        red('\x1b[31m✗\x1b[0m ' + new URL(adresa).pathname, `${j.error.code} ${j.error.message}`);
+        continue;
+      }
+      const s = j.inspectionResult?.indexStatusResult ?? {};
+      const stanje = s.coverageState ?? 'nepoznato';
+      stanja.set(stanje, (stanja.get(stanje) ?? 0) + 1);
+      const ok = s.verdict === 'PASS';
+      if (!ok) red(`\x1b[33m·\x1b[0m ${new URL(adresa).pathname}`, stanje);
+    } catch (e) {
+      red('\x1b[31m✗\x1b[0m ' + new URL(adresa).pathname, e.message);
+    }
+  }
+  for (const [stanje, broj] of [...stanja].sort((a, b) => b[1] - a[1])) {
+    const dobro = /Submitted and indexed|URL is on Google/i.test(stanje);
+    red(`${dobro ? '\x1b[32m✓\x1b[0m' : '\x1b[33m·\x1b[0m'} ${stanje}`, `${broj} ${broj === 1 ? 'strana' : 'strana'}`);
+  }
+}
+
+/** Adrese svih strana, onako kako ih Google vidi — iz živog sitemap-a. */
+async function adreseIzSitemapa() {
+  const uzmi = async (u) => (await (await fetch(u)).text());
+  const glavni = await uzmi(`${SAJT}/sitemap-index.xml`);
+  const deca = [...glavni.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const adrese = [];
+  for (const d of deca) {
+    const x = await uzmi(d);
+    adrese.push(...[...x.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
+  }
+  return [...new Set(adrese)];
+}
+
 async function proveriGSC() {
-  naslov('GOOGLE SEARCH CONSOLE (7 dana, sa 2 dana kašnjenja)');
   const put = path.join(os.homedir(), '.config', 'glass018.rs', 'gsc-key.json');
   const sirovo = procitaj(put);
-  if (!sirovo) return red('ključ', 'nema ga: ' + put);
-
-  try {
-    const tok = await gscToken(JSON.parse(sirovo));
-    if (!tok) return red('prijava', 'nije uspela');
-
-    const zovi = async (dimenzije) => {
-      const r = await fetch(
-        `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE)}/searchAnalytics/query`,
-        {
-          method: 'POST',
-          headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ startDate: dom(9), endDate: dom(2), dimensions: dimenzije, rowLimit: 10 }),
-        }
-      );
-      return r.json();
-    };
-
-    const q = await zovi(['query']);
-    if (q.error) return red('nedostupno', `${q.error.code} ${q.error.message}`);
-
-    const rows = q.rows ?? [];
-    if (!rows.length) {
-      red('pretrage', 'još nema podataka (novo je — treba nekoliko dana)');
-    } else {
-      for (const r of rows)
-        red(r.keys[0], `${r.clicks} klik / ${r.impressions} prikaz · poz. ${r.position.toFixed(1)}`);
-    }
-
-    const p = await zovi(['page']);
-    if (p.rows?.length) {
-      console.log();
-      for (const r of p.rows.slice(0, 5))
-        red(new URL(r.keys[0]).pathname, `${r.clicks} klik / ${r.impressions} prikaz`);
-    }
-  } catch (e) {
-    red('greška', e.message);
+  if (!sirovo) {
+    naslov('GOOGLE SEARCH CONSOLE');
+    return red('ključ', 'nema ga: ' + put);
   }
+
+  let tok;
+  try {
+    tok = await gscToken(JSON.parse(sirovo));
+  } catch (e) {
+    naslov('GOOGLE SEARCH CONSOLE');
+    return red('prijava', e.message);
+  }
+  if (!tok) {
+    naslov('GOOGLE SEARCH CONSOLE');
+    return red('prijava', 'nije uspela');
+  }
+
+  // Google kasni oko dva dana, pa se meri 7 dana koji se završavaju pre dva dana,
+  // i porede se sa 7 dana pre toga — inače se svaki dan gleda nepotpun podatak.
+  const sada = { od: dom(9), do: dom(3) };
+  const pre = { od: dom(16), do: dom(10) };
+
+  naslov(`GOOGLE SEARCH CONSOLE (${sada.od} — ${sada.do})`);
+
+  const zbir = (r) =>
+    (r.rows ?? []).reduce(
+      (a, x) => ({ klik: a.klik + x.clicks, prikaz: a.prikaz + x.impressions }),
+      { klik: 0, prikaz: 0 }
+    );
+
+  const [sad, ranije] = await Promise.all([
+    gscUpit(tok, { startDate: sada.od, endDate: sada.do, dimensions: ['date'], rowLimit: 30 }),
+    gscUpit(tok, { startDate: pre.od, endDate: pre.do, dimensions: ['date'], rowLimit: 30 }),
+  ]);
+  if (sad.error) return red('nedostupno', `${sad.error.code} ${sad.error.message}`);
+
+  const a = zbir(sad);
+  const b = zbir(ranije);
+  const razlika = (novo, staro) => {
+    if (staro === 0) return novo === 0 ? '' : '  \x1b[32m(novo)\x1b[0m';
+    const p = Math.round(((novo - staro) / staro) * 100);
+    const boja = p >= 0 ? '\x1b[32m' : '\x1b[31m';
+    return `  ${boja}${p >= 0 ? '+' : ''}${p}%\x1b[0m prema prethodnih 7 dana`;
+  };
+  red('klikova', a.klik + razlika(a.klik, b.klik));
+  red('prikaza', a.prikaz + razlika(a.prikaz, b.prikaz));
+  red('CTR', a.prikaz ? ((a.klik / a.prikaz) * 100).toFixed(1) + ' %' : '—');
+
+  const pretrage = await gscUpit(tok, {
+    startDate: sada.od,
+    endDate: sada.do,
+    dimensions: ['query'],
+    rowLimit: 25,
+  });
+  const redovi = pretrage.rows ?? [];
+  if (!redovi.length) {
+    red('pretrage', 'još nema podataka');
+  } else {
+    console.log('\n  \x1b[1mPretrage\x1b[0m');
+    for (const r of redovi.slice(0, 8))
+      red('  ' + r.keys[0], `${r.clicks} klik / ${r.impressions} prikaz · poz. ${r.position.toFixed(1)}`);
+
+    // Pozicije 11—20 su druga strana Google-a. Tu je najlakši dobitak: strana
+    // je već relevantna, fali joj malo da pređe na prvu.
+    const blizu = redovi.filter((r) => r.position > 10 && r.position <= 20);
+    if (blizu.length) {
+      console.log('\n  \x1b[1mNa drugoj strani (najlakše se dobija)\x1b[0m');
+      for (const r of blizu.slice(0, 6))
+        red('  ' + r.keys[0], `poz. ${r.position.toFixed(1)} · ${r.impressions} prikaz`);
+    }
+  }
+
+  const strane = await gscUpit(tok, {
+    startDate: sada.od,
+    endDate: sada.do,
+    dimensions: ['page'],
+    rowLimit: 25,
+  });
+  if (strane.rows?.length) {
+    console.log('\n  \x1b[1mStrane\x1b[0m');
+    for (const r of strane.rows.slice(0, 8)) {
+      const u = new URL(r.keys[0]);
+      // http:// i www. se pojavljuju kao zasebne strane dok ih Google ne spoji.
+      // Bez ovoga se ista strana prikaže dvaput bez objašnjenja.
+      const kanonski = u.protocol === 'https:' && u.host === 'glass018.rs';
+      const ime = kanonski ? u.pathname : `${u.pathname}  \x1b[33m[${u.protocol}//${u.host}]\x1b[0m`;
+      red('  ' + ime, `${r.clicks} klik / ${r.impressions} prikaz · poz. ${r.position.toFixed(1)}`);
+    }
+  }
+
+  return tok;
 }
 
 // ----------------------------------------------------------------
@@ -214,5 +328,6 @@ console.log(`\n\x1b[1m═══ ${SAJT} ═══\x1b[0m`);
 await proveriSajt();
 proveriSadrzaj();
 await proveriCloudflare();
-await proveriGSC();
+const tok = await proveriGSC();
+if (tok) await proveriIndeksiranje(tok, await adreseIzSitemapa());
 console.log();

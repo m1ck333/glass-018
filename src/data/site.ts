@@ -28,7 +28,7 @@ export const site = {
   /** Viber koristi isti broj, bez razmaka i sa pozivnim brojem. */
   viber: '+381655246282',
 
-  workingHours: 'Ponedeljak — Subota, 08:00–18:00',
+  workingHours: 'Ponedeljak — Subota, 07:00–18:00',
 
   /**
    * Potpis autora sajta u podnožju — diskretno, da ne odvlači pažnju sa
@@ -47,7 +47,7 @@ export const site = {
   /** Isto radno vreme, u obliku koji razume Google (schema.org). */
   radnoVreme: {
     dani: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    od: '08:00',
+    od: '07:00',
     do: '18:00',
   },
 

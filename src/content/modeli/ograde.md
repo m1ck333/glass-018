@@ -16,6 +16,16 @@ predstavnik: 6
 redosled: 8
 ---
 
-Kod ograda nema fiksne osnovne cene kao kod kabina — cena se računa po kvadratu stakla, jer se i posao svodi na staklo i nosače koji ga drže.
+Najviše staklenih ograda radim na terasama i balkonima. Tamo i imaju najviše smisla — puna
+zidana ili metalna ograda zatvori pogled koji je verovatno bio razlog da se terasa uopšte
+napravi, a staklo ga ostavi ceo.
 
-Zato kalkulator ovde traži samo dužinu i visinu ograde. Vrsta nosača i način ugradnje se dogovaraju na licu mesta, pošto zavise od toga da li se buši u beton, u čelik ili u drvo.
+Rade se i unutrašnja stepeništa, gde staklo pušta svetlo niz stepenice umesto da ga preseče,
+kao i ograde oko dvorišta i bazena.
+
+**Cena se računa samo po kvadratu stakla.** Kod ograda nema fiksne osnovne cene kao kod tuš
+kabina, jer se posao i svodi na staklo i nosače koji ga drže. Zato kalkulator ovde traži samo
+dužinu i visinu ograde — unesete mere i odmah vidite iznos.
+
+Vrsta nosača i način ugradnje dogovaraju se na licu mesta, pošto zavise od toga da li se buši
+u beton, u čelik ili u drvo. Izlazak i mera su besplatni.

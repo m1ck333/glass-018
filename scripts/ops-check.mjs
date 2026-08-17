@@ -113,7 +113,9 @@ async function proveriCloudflare() {
         ) { count dimensions { requestPath } }
       } }
     }`;
-  try {
+  // Cloudflare GraphQL ume da vrati „Internal server error" bez razloga i
+  // proradi na sledeći pokušaj. Bez ovoga izveštaj laže da nema poseta.
+  const zovi = async () => {
     const r = await fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -126,8 +128,16 @@ async function proveriCloudflare() {
         },
       }),
     });
-    const j = await r.json();
-    if (j.errors?.length) return red('nedostupno', j.errors[0].message);
+    return r.json();
+  };
+
+  try {
+    let j = await zovi();
+    for (let i = 0; i < 2 && j.errors?.length; i++) {
+      await new Promise((r) => setTimeout(r, 1500));
+      j = await zovi();
+    }
+    if (j.errors?.length) return red('nedostupno', j.errors[0].message + '  (3 pokušaja)');
     const rows = j.data?.viewer?.accounts?.[0]?.rum ?? [];
     if (!rows.length) return red('poseta', 'još nema podataka');
     red('učitavanja strana', rows.reduce((s, x) => s + x.count, 0));

@@ -11,7 +11,7 @@ detalji:
   - "Zaptivke po celoj visini"
 osnovnaCena: 26300
 imaDubinu: true
-predstavnik: 6
+predstavnik: 3
 redosled: 7
 ---
 
